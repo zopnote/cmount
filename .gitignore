@@ -1,0 +1,5 @@
+/out/
+/compile_commands.json
+/.cache/
+/.fleet/
+/.idea/
