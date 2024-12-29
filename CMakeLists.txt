@@ -10,4 +10,11 @@ include(${CMAKE_SOURCE_DIR}/vendor/curl_conf.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/yaml_conf.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/cthreads_conf.cmake)
 
-add_subdirectory(bin)
+add_executable(cmount ${CMAKE_SOURCE_DIR}/src/main.c)
+
+target_link_libraries(cmount LLVM_ALL CURL_ALL CJSON_ALL YAML_ALL CTHREADS_ALL)
+
+install(TARGETS cmount DESTINATION bin)
+
+add_subdirectory(jit)
+add_subdirectory(dart-server)

@@ -34,4 +34,4 @@ target_include_directories(CURL_ALL INTERFACE ${CURL_DIR}/include)
 
 target_link_libraries(CURL_ALL INTERFACE ${CURL_LIBRARIES})
 
-install(FILES ${CURL_BINARY} DESTINATION bin)
+install(FILES ${CURL_BINARY} DESTINATION runtime/lib)

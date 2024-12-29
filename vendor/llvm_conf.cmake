@@ -38,4 +38,4 @@ target_include_directories(LLVM_ALL INTERFACE ${LLVM_INCLUDE_DIRS})
 
 target_link_libraries(LLVM_ALL INTERFACE ${LLVM_LIBRARIES})
 
-install(FILES ${LLVM_BINARIES} DESTINATION bin)
+install(FILES ${LLVM_BINARIES} DESTINATION runtime/lib)
