@@ -4,6 +4,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(LLVM_BINARIES
         ${LLVM_BINARY_DIR}/bin/LLVM-C.dll
         ${LLVM_BINARY_DIR}/bin/libclang.dll
+        ${LLVM_BINARY_DIR}/bin/LLVM-C.dll
     )
     file(GLOB LLVM_LIBRARIES ${LLVM_LIBRARY_DIR}/*.lib)
 
