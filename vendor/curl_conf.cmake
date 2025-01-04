@@ -12,4 +12,4 @@ target_include_directories(CURL INTERFACE ${CURL_DIRECTORY}/include)
 
 target_link_libraries(CURL INTERFACE ${CURL_LIBRARIES})
 
-install(FILES ${CURL_BINARIES} DESTINATION runtime/lib)
+install(FILES ${CURL_BINARIES} DESTINATION bin)

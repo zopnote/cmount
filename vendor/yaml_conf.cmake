@@ -11,4 +11,4 @@ target_include_directories(YAML INTERFACE ${YAML_DIRECTORY}/include)
 
 target_link_libraries(YAML INTERFACE ${YAML_LIBRARIES})
 
-install(FILES ${YAML_BINARIES} DESTINATION runtime/lib)
+install(FILES ${YAML_BINARIES} DESTINATION bin)

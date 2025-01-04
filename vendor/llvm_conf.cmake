@@ -26,4 +26,4 @@ target_include_directories(LLVM INTERFACE ${LLVM_INCLUDE_DIRS})
 
 target_link_libraries(LLVM INTERFACE ${LLVM_LIBRARIES})
 
-install(FILES ${LLVM_SHARED_LIB_BINARIES} DESTINATION runtime/lib)
+install(FILES ${LLVM_SHARED_LIB_BINARIES} DESTINATION bin)

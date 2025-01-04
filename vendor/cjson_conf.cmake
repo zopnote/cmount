@@ -18,4 +18,4 @@ target_include_directories(CJSON INTERFACE ${CJSON_INCLUSION_DIRECTORY})
 
 target_link_libraries(CJSON INTERFACE ${CJSON_BINARY_DYLIB}.a)
 
-install(FILES ${CJSON_BINARY_DYLIB} DESTINATION runtime/lib)
+install(FILES ${CJSON_BINARY_DYLIB} DESTINATION bin)
