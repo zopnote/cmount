@@ -1,37 +1,14 @@
-if(NOT YAML_DIR OR YAML_DIR STREQUAL null)
-    message(FATAL_ERROR "YAML_DIR is not set.")
+if(NOT YAML_DIRECTORY)
+    message(FATAL_ERROR "YAML_DIRECTORY is not set.")
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(YAML_BINARY
-        ${YAML_DIR}/bin/libyaml-0-2.dll
-    )
-    file(GLOB YAML_LIBRARIES ${YAML_DIR}/lib/*.a)
+file(GLOB YAML_BINARIES ${YAML_DIRECTORY}/bin/*${PLATFORM_DYLIB_ENDING})
+file(GLOB YAML_LIBRARIES ${YAML_DIRECTORY}/lib/*.a)
 
+add_library(YAML INTERFACE)
 
-else()
-    if(APPLE)
-        set(YAML_BINARY
-            ${YAML_DIR}/bin/libyaml-0-2.dylib
-        )
-        file(GLOB YAML_LIBRARIES ${YAML_DIR}/lib/*.a)
+target_include_directories(YAML INTERFACE ${YAML_DIRECTORY}/include)
 
-    elseif(UNIX)
-        set(YAML_BINARY
-            ${YAML_DIR}/bin/libyaml-0-2.so
-        )
-        file(GLOB YAML_LIBRARIES ${YAML_DIR}/lib/*.a)
+target_link_libraries(YAML INTERFACE ${YAML_LIBRARIES})
 
-    else()
-        message(FATAL_ERROR "Operating system isn't supported.")
-    endif()
-endif()
-
-
-add_library(YAML_ALL INTERFACE)
-
-target_include_directories(YAML_ALL INTERFACE ${YAML_DIR}/include)
-
-target_link_libraries(YAML_ALL INTERFACE ${YAML_LIBRARIES})
-
-install(FILES ${YAML_BINARY} DESTINATION runtime/lib)
+install(FILES ${YAML_BINARIES} DESTINATION runtime/lib)

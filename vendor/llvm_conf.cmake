@@ -1,42 +1,29 @@
+
 find_package(LLVM REQUIRED CONFIG)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(LLVM_BINARIES
-        ${LLVM_BINARY_DIR}/bin/LLVM-C.dll
-        ${LLVM_BINARY_DIR}/bin/libclang.dll
-        ${LLVM_BINARY_DIR}/bin/LLVM-C.dll
+if(NOT LLVM_BINARY_DIR)
+    message(FATAL_ERROR "LLVM not found. Specify LLVM_BINARY_DIR and LLVM_LIBRARY_DIR directly.")
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+    set(LLVM_SHARED_LIB_BINARIES
+        ${LLVM_BINARY_DIR}/bin/LLVM-C${PLATFORM_DYLIB_ENDING}
+        ${LLVM_BINARY_DIR}/bin/libclang${PLATFORM_DYLIB_ENDING}
     )
     file(GLOB LLVM_LIBRARIES ${LLVM_LIBRARY_DIR}/*.lib)
-
 
 else()
-    if(APPLE)
-    file(GLOB LLVM_ALL_BIN ${LLVM_LIBRARY_DIR}/libLLVM*.a)
-    set(LLVM_BINARIES
-        ${LLVM_BINARY_DIR}/bin/libclang.dylib
-        LLVM_ALL_BIN
+    set(LLVM_SHARED_LIB_BINARIES
+        ${LLVM_LIBRARY_DIR}/libLLVM${PLATFORM_DYLIB_ENDING}
+        ${LLVM_LIBRARY_DIR}/libclang${PLATFORM_DYLIB_ENDING}
     )
-    file(GLOB LLVM_LIBRARIES ${LLVM_LIBRARY_DIR}/*.lib)
-
-
-elseif(UNIX)
-    file(GLOB LLVM_ALL_BIN ${LLVM_LIBRARY_DIR}/libLLVM*.a)
-    set(LLVM_BINARIES
-        ${LLVM_BINARY_DIR}/bin/libclang.so
-        LLVM_ALL_BIN
-    )
-    file(GLOB LLVM_LIBRARIES ${LLVM_LIBRARY_DIR}/*.lib)
-
-
-endif()
-    message(FATAL_ERROR "Operating system isn't supported.")
+    file(GLOB LLVM_LIBRARIES ${LLVM_LIBRARY_DIR}/lib*.a)
 endif()
 
+add_library(LLVM INTERFACE)
 
-add_library(LLVM_ALL INTERFACE)
+target_include_directories(LLVM INTERFACE ${LLVM_INCLUDE_DIRS})
 
-target_include_directories(LLVM_ALL INTERFACE ${LLVM_INCLUDE_DIRS})
+target_link_libraries(LLVM INTERFACE ${LLVM_LIBRARIES})
 
-target_link_libraries(LLVM_ALL INTERFACE ${LLVM_LIBRARIES})
-
-install(FILES ${LLVM_BINARIES} DESTINATION runtime/lib)
+install(FILES ${LLVM_SHARED_LIB_BINARIES} DESTINATION runtime/lib)

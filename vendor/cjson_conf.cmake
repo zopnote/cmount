@@ -1,39 +1,21 @@
 
-if (NOT CJSON_DIR OR CJSON_DIR STREQUAL null)
-    message(FATAL_ERROR "CJSON_DIR is not set!")
+if (NOT CJSON_DIRECTORY)
+    message(FATAL_ERROR "CJSON_DIRECTORY is not set!")
 endif()
 
-set(CJSON_BINARY ${CMAKE_BINARY_DIR}/cJSON)
+set(CJSON_INCLUSION_DIRECTORY ${CMAKE_BINARY_DIR}/cJSON)
 
-file(COPY ${CJSON_DIR}/cJSON.c DESTINATION ${CJSON_BINARY}/cjson)
-file(COPY ${CJSON_DIR}/cJSON.h DESTINATION ${CJSON_BINARY}/cjson)
+file(COPY ${CJSON_DIRECTORY}/cJSON.c DESTINATION ${CJSON_INCLUSION_DIRECTORY}/cjson)
+file(COPY ${CJSON_DIRECTORY}/cJSON.h DESTINATION ${CJSON_INCLUSION_DIRECTORY}/cjson)
 
-add_library(cjson SHARED ${CJSON_BINARY}/cjson/cJSON.c)
+add_library(cjson SHARED ${CJSON_INCLUSION_DIRECTORY}/cjson/cJSON.c)
 
-add_library(CJSON_ALL INTERFACE)
+set(CJSON_BINARY_DYLIB ${CMAKE_BINARY_DIR}/libcjson${PLATFORM_DYLIB_ENDING})
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(CJSON_BINARY_DYLIB
-        ${CMAKE_BINARY_DIR}/libcjson.dll
-    )
-else()
-    if(APPLE)
-        set(CJSON_BINARY_DYLIB
-            ${CMAKE_BINARY_DIR}/libcjson.dylib
-        )
-    elseif(UNIX)
-        set(CJSON_BINARY_DYLIB
-            ${CMAKE_BINARY_DIR}/libcjson.so
-        )
-    else()
-        message(FATAL_ERROR "Operating system isn't supported.")
-    endif()
-endif()
+add_library(CJSON INTERFACE)
 
-target_include_directories(CJSON_ALL INTERFACE ${CJSON_BINARY})
+target_include_directories(CJSON INTERFACE ${CJSON_INCLUSION_DIRECTORY})
 
-target_link_libraries(CJSON_ALL INTERFACE ${CJSON_BINARY_DYLIB}.a)
+target_link_libraries(CJSON INTERFACE ${CJSON_BINARY_DYLIB}.a)
 
 install(FILES ${CJSON_BINARY_DYLIB} DESTINATION runtime/lib)
-
-
