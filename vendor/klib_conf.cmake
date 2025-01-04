@@ -1,0 +1,34 @@
+
+if (NOT KLIB_DIRECTORY)
+    message(FATAL_ERROR "KLIB_DIRECTORY is not set!")
+endif()
+
+set(KLIB_INCLUSION_DIRECTORY ${CMAKE_BINARY_DIR}/Klib)
+
+set(KLIB_SOURCES
+    ${KLIB_DIRECTORY}/kstring.c
+)
+set(KLIB_HEADER
+    ${KLIB_DIRECTORY}/khash.h
+    ${KLIB_DIRECTORY}/kstring.h
+    ${KLIB_DIRECTORY}/klist.h
+    ${KLIB_DIRECTORY}/ksort.h
+    ${KLIB_DIRECTORY}/kvec.h
+)
+
+file(COPY ${KLIB_SOURCES} DESTINATION ${KLIB_INCLUSION_DIRECTORY}/klib)
+file(COPY ${KLIB_HEADER} DESTINATION ${KLIB_INCLUSION_DIRECTORY}/klib)
+
+add_library(klib SHARED ${KLIB_SOURCES})
+
+target_link_libraries(klib PRIVATE CURL)
+
+set(KLIB_BINARY_DYLIB ${CMAKE_BINARY_DIR}/libklib${PLATFORM_DYLIB_ENDING})
+
+add_library(KLIB INTERFACE)
+
+target_include_directories(KLIB INTERFACE ${KLIB_INCLUSION_DIRECTORY})
+
+target_link_libraries(KLIB INTERFACE ${KLIB_BINARY_DYLIB}.a)
+
+install(FILES ${KLIB_BINARY_DYLIB} DESTINATION bin)
