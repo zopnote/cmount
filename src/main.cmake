@@ -1,15 +1,12 @@
 
-file(GLOB_RECURSE FILES_MAIN_EXECUTABLE
-    ${COMPONENT_DIRECTORY}/main/*.c
+file(GLOB_RECURSE SRC_FILES_MAIN_EXECUTABLE
+    ${SRC_COMPONENT_DIRECTORY}/main/*.c
 )
 
-add_executable(cmount ${FILES_MAIN_EXECUTABLE})
+add_executable(${PROJECT_NAME} ${SRC_FILES_MAIN_EXECUTABLE})
 
-target_link_libraries(cmount
-    LLVM CURL CJSON YAML CTHREADS KLIB
-)
+target_link_libraries(${PROJECT_NAME} core)
 
+target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_INCLUDE_DIRECTORY})
 
-
-
-install(TARGETS cmount DESTINATION bin)
+install(TARGETS ${PROJECT_NAME} DESTINATION ${OUT_BINARY_DIRECTORY})

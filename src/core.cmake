@@ -1,17 +1,18 @@
-file(GLOB_RECURSE CORE_FILES
-    ${COMPONENT_DIRECTORY}/core/*.c
+file(GLOB_RECURSE SRC_CORE_FILES
+    ${SRC_COMPONENT_DIRECTORY}/core/*.c
 )
 
-add_library(cmountcore SHARED ${CORE_FILES})
 
-target_include_directories(cmountcore PRIVATE ${INCLUDE_DIRECTORY}/core)
+add_library(core SHARED ${SRC_CORE_FILES})
 
-target_include_directories(cmountcore INTERFACE ${INCLUDE_DIRECTORY})
+target_include_directories(core PRIVATE ${SRC_INCLUDE_DIRECTORY}/core)
 
-target_link_libraries(cmountcore PUBLIC YAML KLIB)
+target_link_libraries(core KLIB CURL CJSON CTHREADS YAML)
 
-set(CORE_BINARY_DYLIB ${CMAKE_BINARY_DIR}/libcmountcore${PLATFORM_DYLIB_ENDING})
 
-install(FILES ${CORE_BINARY_DYLIB} DESTINATION bin)
+set(CORE_BINARY_DYLIB ${CMAKE_BINARY_DIR}/libcore${PLATFORM_DYLIB_ENDING})
 
-install(FILES ${CORE_BINARY_DYLIB}.a DESTINATION lib)
+
+install(FILES ${CORE_BINARY_DYLIB} DESTINATION ${OUT_BINARY_DIRECTORY})
+
+install(FILES ${CORE_BINARY_DYLIB}.a DESTINATION ${OUT_LIBRARY_DIRECTORY})
