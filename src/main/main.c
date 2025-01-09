@@ -1,10 +1,5 @@
-#include <stdint.h>
-#include <stdio.h>
 
-#include "yaml.h"
-
-
-int main(int args_count, char** args) {
+int main(int argc, char** argv) {
 
     return 0;
 }
