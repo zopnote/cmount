@@ -1,5 +1,6 @@
-/out/
-/compile_commands.json
+/.out/
 /.cache/
 /.fleet/
 /.idea/
+/build.py
+/compile_commands.json
