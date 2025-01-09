@@ -1,0 +1,15 @@
+# CMake set @relative paths@
+
+# Related to main executable binary
+binary: @OUT_BINARY_DIRECTORY@
+internal: @OUT_INTERNAL_DIRECTORY@
+cache: @OUT_CACHE_DIRECTORY@
+
+# Related to third party library usage
+library: @OUT_LIBRARY_DIRECTORY@
+include: @OUT_INCLUDE_DIRECTORY@
+
+# Related to runtime usage
+runtime: @OUT_RUNTIME_DIRECTORY@
+config: @OUT_CONFIG_DIRECTORY@
+scripts: @OUT_SCRIPTS_DIRECTORY@
