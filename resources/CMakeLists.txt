@@ -1,12 +1,39 @@
+set(RES_SRC_DIRECTORIES
+    config
+    scripts
+    internal
+)
+set(RES_OUT_DIRECTORIES
+    ${OUT_CONFIG_DIRECTORY}
+    ${OUT_SCRIPTS_DIRECTORY}
+    ${OUT_INTERNAL_DIRECTORY}
+)
 
-set(CONFIG_DIRECTORY_NAME config)
-file(GLOB SRC_CONFIG_FILES ${CMAKE_SOURCE_DIR}/resources/${CONFIG_DIRECTORY_NAME}/*.yaml)
-install(FILES ${SRC_CONFIG_FILES} DESTINATION runtime/${CONFIG_DIRECTORY_NAME})
+foreach(INDEX RANGE 0 2)
 
+    list(GET RES_SRC_DIRECTORIES ${INDEX} DIRECTORY)
+    list(GET RES_OUT_DIRECTORIES ${INDEX} OUT_DIRECTORY)
 
-set(SCRIPTS_DIRECTORY_NAME scripts)
-file(GLOB SRC_SCRIPTS_FILES ${CMAKE_SOURCE_DIR}/resources/${SCRIPTS_DIRECTORY_NAME}/*.yaml)
-install(FILES ${SRC_SCRIPTS_FILES} DESTINATION runtime/${SCRIPTS_DIRECTORY_NAME})
+    file(GLOB_RECURSE ENTITIES
+        ${CMAKE_CURRENT_SOURCE_DIR}/${DIRECTORY}/*
+    )
 
-file(GLOB SRC_INTERNAL_FILES ${CMAKE_SOURCE_DIR}/resources/internal/*.yaml)
-install(FILES ${SRC_INTERNAL_FILES} DESTINATION ${OUT_INTERNAL_DIRECTORY})
+    foreach(ENTITY ${ENTITIES})
+        get_filename_component(ENTITY_EXTENSION ${ENTITY} EXT)
+
+        if(ENTITY_EXTENSION STREQUAL .yaml OR ENTITY_EXTENSION STREQUAL .json)
+            install(FILES ${ENTITY} DESTINATION ${OUT_DIRECTORY})
+        else()
+
+            get_filename_component(ENTITY_FILE_NAME ${ENTITY} NAME)
+
+            string(REPLACE ".in" "" BASE_NAME ${ENTITY_FILE_NAME})
+
+            if(${ENTITY} MATCHES ".*\\.in$")
+                configure_file(${ENTITY} ${CMAKE_BINARY_DIR}/${BASE_NAME} @ONLY)
+                install(FILES ${CMAKE_BINARY_DIR}/${BASE_NAME} DESTINATION ${OUT_DIRECTORY})
+            endif()
+
+        endif()
+    endforeach()
+endforeach()

@@ -1,12 +1,27 @@
 cmake_minimum_required(VERSION 3.13)
 
+
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-project(cmount)
+if(CMAKE_BUILD_TYPE STREQUAL Release)
+    set(GENERATE_DOCUMENTATION TRUE)
+    set(CUSTOM_FLAGS " -fstack-protector")
+endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c2x")
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(GENERATE_DOCUMENTATION FALSE)
+    set(CUSTOM_FLAGS " -g -fstack-protector-strong")
+endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}${CUSTOM_FLAGS} -std=c2x")
+
+
+
+
+project(cmount VERSION 0.01)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -15,7 +30,6 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/.out/${CMAKE_BUILD_TYPE}/${PROJECT_
 set(SRC_INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/include)
 
 install(DIRECTORY ${SRC_INCLUDE_DIRECTORY} DESTINATION ./)
-
 
 # Central definitions of outpur project structure
 include(${CMAKE_SOURCE_DIR}/structure.cmake)
@@ -27,3 +41,5 @@ include(${CMAKE_SOURCE_DIR}/vendor.cmake)
 include(${CMAKE_SOURCE_DIR}/components.cmake)
 
 add_subdirectory(resources)
+
+add_subdirectory(docs)

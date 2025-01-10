@@ -1,0 +1,3 @@
+if(GENERATE_DOCUMENTATION)
+    install(FILES libraries.md DESTINATION ${OUT_LIBRARY_DIRECTORY})
+endif()
