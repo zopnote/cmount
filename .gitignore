@@ -4,3 +4,9 @@
 /.idea/
 /build.py
 /compile_commands.json
+/cmake-build-debug/
+/cmake-build-release/
+/run_install_build.ps1
+/run_install_build.py
+
+/Dockerfile

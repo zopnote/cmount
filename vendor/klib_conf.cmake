@@ -21,11 +21,4 @@ file(COPY ${KLIB_HEADER} DESTINATION ${KLIB_INCLUSION_DIRECTORY}/klib)
 
 add_library(klib STATIC ${KLIB_SOURCES})
 
-set(KLIB_BINARY_LIB ${CMAKE_BINARY_DIR}/libklib.a)
-
-add_library(KLIB INTERFACE)
-
-target_include_directories(KLIB INTERFACE ${KLIB_INCLUSION_DIRECTORY})
-
-target_link_libraries(KLIB INTERFACE ${KLIB_BINARY_LIB})
-
+target_include_directories(klib PUBLIC ${KLIB_INCLUSION_DIRECTORY})

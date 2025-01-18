@@ -1,24 +1,20 @@
 cmake_minimum_required(VERSION 3.13)
 
-
+set(CMAKE_C_COMPILER CLANG)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Release)
-    set(GENERATE_DOCUMENTATION TRUE)
-    set(CUSTOM_FLAGS " -fstack-protector")
+    set(CUSTOM_FLAGS " -static -fno-stack-protector -Wno-unknown-pragmas -Wno-deprecated-declarations -Wno-microsoft")
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(GENERATE_DOCUMENTATION FALSE)
-    set(CUSTOM_FLAGS " -g -fstack-protector-strong")
+    set(CUSTOM_FLAGS " -g -fstack-protector -Wno-unknown-pragmas -Wno-deprecated-declarations -Wno-microsoft")
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}${CUSTOM_FLAGS} -std=c2x")
-
-
 
 
 project(cmount VERSION 0.01)
@@ -31,7 +27,7 @@ set(SRC_INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/include)
 
 install(DIRECTORY ${SRC_INCLUDE_DIRECTORY} DESTINATION ./)
 
-# Central definitions of outpur project structure
+# Central definitions of output project structure
 include(${CMAKE_SOURCE_DIR}/structure.cmake)
 
 # Builds all third party libraries
@@ -41,5 +37,3 @@ include(${CMAKE_SOURCE_DIR}/vendor.cmake)
 include(${CMAKE_SOURCE_DIR}/components.cmake)
 
 add_subdirectory(resources)
-
-add_subdirectory(docs)

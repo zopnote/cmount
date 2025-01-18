@@ -2,10 +2,14 @@ if(NOT YAML_DIRECTORY)
     message(FATAL_ERROR "YAML_DIRECTORY is not set.")
 endif()
 
-file(GLOB YAML_LIBRARIY ${YAML_DIRECTORY}/lib/libyaml.a)
-
+file(GLOB YAML_LIBRARY
+        ${YAML_DIRECTORY}/${PLATFORM_LIB_PREFIX}yaml${PLATFORM_STLIB_ENDING}
+)
+message(STATUS ${YAML_LIBRARY})
 add_library(YAML INTERFACE)
 
 target_include_directories(YAML INTERFACE ${YAML_DIRECTORY}/include)
 
-target_link_libraries(YAML INTERFACE ${YAML_LIBRARIY})
+target_link_libraries(YAML INTERFACE ${YAML_LIBRARY})
+
+install(FILES ${YAML_DIRECTORY}/${PLATFORM_LIB_PREFIX}yaml${PLATFORM_DYLIB_ENDING} DESTINATION bin)

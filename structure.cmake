@@ -1,8 +1,14 @@
 
 set(MAIN_EXECUTABLE_NAME ${PROJECT_NAME})
 
+
+
+# The binary and internal paths are hard coded in the program
 set(OUT_BINARY_DIRECTORY bin)
 set(OUT_INTERNAL_DIRECTORY ${OUT_BINARY_DIRECTORY}/internal)
+
+
+
 set(OUT_CACHE_DIRECTORY ${OUT_BINARY_DIRECTORY}/cache)
 
 set(OUT_DOCUMENTATION_DIRECTORY docs)
@@ -14,6 +20,7 @@ set(OUT_INCLUDE_DIRECTORY include)
 set(OUT_RUNTIME_DIRECTORY runtime)
 set(OUT_CONFIG_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/config)
 set(OUT_SCRIPTS_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/scripts)
+set(OUT_RESOURCE_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/resources)
 
 
 set(PROJECT_STRUCTURE_PATHS ${CMAKE_SOURCE_DIR}/resources/internal/paths.yaml.template)

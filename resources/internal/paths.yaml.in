@@ -1,4 +1,3 @@
-# CMake set @relative paths@
 
 # Related to main executable binary
 binary: @OUT_BINARY_DIRECTORY@

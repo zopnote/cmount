@@ -5,7 +5,7 @@ file(GLOB_RECURSE SRC_FILES_MAIN_EXECUTABLE
 
 add_executable(${PROJECT_NAME} ${SRC_FILES_MAIN_EXECUTABLE})
 
-target_link_libraries(${PROJECT_NAME} core)
+target_link_libraries(${PROJECT_NAME} PYTHON klib YAML)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_INCLUDE_DIRECTORY})
 
