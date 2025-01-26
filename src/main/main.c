@@ -1,7 +1,7 @@
 
 #include "schema/messages.h"
 #include "schema/paths.h"
-
+#include "klib/khash.h"
 
 int main(int argc, char** argv) {
     const char* appRootPath = schema_resolveAppRootPath(argv[0]);

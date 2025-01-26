@@ -5,7 +5,7 @@ endif()
 file(GLOB YAML_LIBRARY
         ${YAML_DIRECTORY}/${PLATFORM_LIB_PREFIX}yaml${PLATFORM_STLIB_ENDING}
 )
-message(STATUS ${YAML_LIBRARY})
+
 add_library(YAML INTERFACE)
 
 target_include_directories(YAML INTERFACE ${YAML_DIRECTORY}/include)
