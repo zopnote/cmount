@@ -12,6 +12,7 @@ struct
     char* runtime;
     char* config;
     char* scripts;
+    char* templates;
 } typedef Paths;
 
 Paths schema_getPaths(const char* filePath);

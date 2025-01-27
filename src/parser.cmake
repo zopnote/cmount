@@ -6,7 +6,7 @@ add_library(parser SHARED ${PARSER_SOURCE_FILES})
 
 target_include_directories(parser PUBLIC ${SRC_INCLUDE_DIRECTORY}/parser)
 
-target_link_libraries(parser PRIVATE YAML klib)
+target_link_libraries(parser PRIVATE YAML)
 
 install(TARGETS parser
         LIBRARY DESTINATION bin

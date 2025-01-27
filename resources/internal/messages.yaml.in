@@ -1,6 +1,8 @@
+# Messages only allow to be at root level and their content must be in
+# a block list format. If not, the parser will not recognize the value.
 
 help:
-  - "Cmount (@PROJECT_NAME@) v@PROJECT_VERSION@ tooling for cross platform C-dependent development."
+  - "Cmount (@CMAKE_BUILD_TYPE@) v@PROJECT_VERSION@ tooling for cross platform C-dependent development."
   - ""
   - "Common commands:"
   - "doctor       Status of installed tooling."
@@ -9,7 +11,7 @@ help:
   - "build        Build to the available targets of your platform."
   - ""
   - "Further commands:"
-  - "install      Install a Cmount extension bundle."
+  - "install      Install an extension bundle."
   - "get          Resolve your project specification."
   - "upgrade      Look for a new version."
   - "config       Configure settings."
@@ -19,3 +21,6 @@ help:
   - "-h, --help       Shows information about a command."
   - "-v, --verbose    Prints further information about activity."
   - ""
+not_found:
+  - "Cannot found what your looking for: ${prefix}${argument}${suffix}"
+  - "To get more information about commands use -h."

@@ -59,6 +59,9 @@ static Paths parsePaths(const char* fileBuffer)
             else if (!strcmp(lastKey, "scripts"))
                 paths.scripts = strdup(currentToken.data.scalar.value);
 
+            else if (!strcmp(lastKey, "templates"))
+                paths.templates = strdup(currentToken.data.scalar.value);
+
         }
         yaml_token_delete(&currentToken);
     }
