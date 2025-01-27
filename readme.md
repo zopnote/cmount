@@ -27,8 +27,7 @@ you will find a similar idea of project configuration.
 name: project_name
 version: dev-.1 # Strings are allowed.
 description: sample description
-authors:
-...
+authors: ...
 license: license.md # Files always relative to project root.
 
 c:
@@ -42,8 +41,6 @@ dart:
   version: 3.4.1
   pub: # Dart pub package manager dependencies.
     yaml: ^2.3
-    ...
-  ...
 ```
 But you maybe notice, a project has its limitations about
 multiple executables etc. For specific use cases you definitely
@@ -65,8 +62,7 @@ should consider to build an extension.
       "windows": [
         "sample.win.dll"
       ]
-    },
-    ...
+    }
   }
 }
 ```
