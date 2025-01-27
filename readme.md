@@ -46,6 +46,7 @@ But you maybe notice, a project has its limitations about
 multiple executables etc. For specific use cases you definitely
 should consider to build an extension.
 
+``extspec.json``
 ```json
 {
   "name": "extension_name",
