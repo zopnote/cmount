@@ -1,5 +1,6 @@
 #pragma once
 
+#define MESSAGE_LINES_LENGTH 32
 
 struct {
     char* name;
@@ -7,8 +8,8 @@ struct {
 } typedef MessagePlaceholder;
 
 struct {
-    char* lines[];
     int length;
+    char* lines[MESSAGE_LINES_LENGTH];
 } typedef Message;
 
 struct {
@@ -23,5 +24,4 @@ void schema_printMessage(Message message);
 void schema_printMessageWithVariables(
     const MessagePlaceholder variables[],
     int variablesCount,
-    Message message
-    );
+    Message message);

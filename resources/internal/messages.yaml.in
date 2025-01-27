@@ -1,6 +1,7 @@
 # Messages only allow to be at root level and their content must be in
 # a block list format. If not, the parser will not recognize the value.
 
+# A message cannot be longer than 32 lines.
 help:
   - "Cmount (@CMAKE_BUILD_TYPE@) v@PROJECT_VERSION@ tooling for cross platform C-dependent development."
   - ""

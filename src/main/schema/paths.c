@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <yaml.h>
-#include <klib/khash.h>
-#include <stdbool.h>
 
 static Paths parsePaths(const char* fileBuffer)
 {;

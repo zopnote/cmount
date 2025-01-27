@@ -1,8 +1,6 @@
 #pragma once
-#include <klib/kvec.h>
 
 void hello();
-typedef kvec_t(char*) kvec_str;
 struct dependency
 {
     char* name;
@@ -13,7 +11,7 @@ struct dependency
 
 struct environment
 {
-    kvec_str dependenceReferences;
+    bool dependenceReferences;
     bool downloadSharedLibraries;
 };
 

@@ -1,4 +1,5 @@
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "schema/messages.h"
@@ -16,12 +17,12 @@ struct {
 } typedef TaskEntry;
 
 
-const TaskEntry tasks[] {
+const TaskEntry tasks[] = {
     "create", create,
 };
 
-bool compare(const TaskEntry *s1, const TaskEntry *s2) {
-    return strcmp(s1->name, s2->name);
+int compare(const void* a, const void* b) {
+    return strcmp(((TaskEntry*)a)->name, ((TaskEntry*)b)->name);
 }
 
 int main(int argc, char** argv) {
@@ -45,6 +46,7 @@ int main(int argc, char** argv) {
     if (!argv[1])
     {
         schema_printMessage(messages.help);
+        return EXIT_SUCCESS;
     }
 
     const TaskEntry taskKey = {
@@ -53,12 +55,12 @@ int main(int argc, char** argv) {
 
     const TaskEntry* foundTask =
         bsearch(
-            &taskKey, tasks,
+            &taskKey, &tasks,
             sizeof(tasks) / sizeof(tasks[0]),
-            sizeof tasks[0], compare);
+            sizeof(tasks[0]), &compare);
 
     if (!foundTask) {
-        const MessagePlaceholder variables[] {
+        const MessagePlaceholder variables[] = {
             "prefix", "cmount ",
             "argument", argv[1],
             "suffix", ""
