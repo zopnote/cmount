@@ -4,17 +4,20 @@
 
 #define MESSAGE_KEYS_END "G86KF47PT65I8"
 
+// Private type to save the available messages more efficient
 typedef struct {
     char* name;
     Message* message;
 } MessageKey;
 
-
+// Processes the String given by parser in to messages.
 static void parserMessagesScan(yaml_parser_t parser, Messages* messages) {
 
     MessageKey keys[] = {
         {"help", &messages->help},
         {"not_found", &messages->not_found},
+        {"create_no_project_name", &messages->create_no_project_name},
+        {"create_invalid_project_name", &messages->create_invalid_project_name},
         {MESSAGE_KEYS_END, NULL},
     };
 
@@ -46,8 +49,7 @@ static void parserMessagesScan(yaml_parser_t parser, Messages* messages) {
             if (lastKey) {
                 free(lastKey);
             }
-            lastKey =
-                strdup(value.data.scalar.value);
+            lastKey = strdup(value.data.scalar.value);
         }
 
         if (event.type != YAML_BLOCK_SEQUENCE_START_TOKEN) {
@@ -88,7 +90,7 @@ static void parserMessagesScan(yaml_parser_t parser, Messages* messages) {
     }
 }
 
-
+// Parse the file buffer into messages
 static Messages parseMessages(const char* fileBuffer) {
 
     yaml_parser_t parser;
@@ -109,7 +111,6 @@ static Messages parseMessages(const char* fileBuffer) {
     yaml_parser_delete(&parser);
     return messages;
 }
-
 
 Messages schema_getMessages(const char* filePath)
 {
@@ -148,6 +149,45 @@ void schema_printMessage(const Message message) {
     }
 }
 
+// Replaces all Strings, found in the buffer identical
+// to the search String, with the replace String.
+static char* stringReplace(
+    const char* search,
+    const char* replace,
+    char* string
+    ) {
+    const char* searchStart =
+        strstr(string, search);
+
+    if(searchStart == NULL) {
+        return string;
+    }
+
+
+    char* tempString =
+        malloc((strlen(string) + 1) * sizeof(char));
+
+    if(tempString == NULL) {
+        return NULL;
+    }
+
+    int len = 0;
+
+    strcpy(tempString, string);
+
+
+    len = searchStart - string;
+    string[len] = '\0';
+
+    strcat(string, replace);
+
+    len += strlen(search);
+    strcat(string, tempString+len);
+
+    free(tempString);
+    return string;
+}
+
 void schema_printMessageWithVariables(
     const MessagePlaceholder variables[],
     const int variablesCount,
@@ -155,34 +195,10 @@ void schema_printMessageWithVariables(
 {
     for (size_t lineI = 0; lineI < message.length; lineI++) {
         char* line = message.lines[lineI];
-
-        for (size_t charI = 0; charI < strlen(line); charI++) {
-
-            if (line[charI] != '$') {
-                return;
-            }
-
-            if (!line[charI + 1]) {
-                return;
-            }
-
-            if (line[charI + 1] != '{') {
-                return;
-            }
-
-            int varEndIndex = charI + 2;
-            while (line[varEndIndex] != '}') {
-                varEndIndex++;
-                if (line[varEndIndex] == '\0') {
-                    printf("Error while parsing messages.\n"
-                           "%s\n\n"
-                           "The variable starting at %llu is not closed.\n"
-                           "As result the message cannot be printed.", line, charI);
-                    break;
-                }
-            }
-            varEndIndex++;
-
+        for (int i = 0; i < variablesCount; i++) {
+            char searchFor[255];
+            sprintf(searchFor, "${%s}", variables[i].name);
+            line = stringReplace(searchFor, variables[i].value, line);
         }
         printf("%s\n", line);
         fflush(stdout);

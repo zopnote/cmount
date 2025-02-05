@@ -5,8 +5,6 @@ file(GLOB_RECURSE SRC_FILES_MAIN_EXECUTABLE
 
 add_executable(${PROJECT_NAME} ${SRC_FILES_MAIN_EXECUTABLE})
 
-target_link_libraries(${PROJECT_NAME} PYTHON YAML)
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_INCLUDE_DIRECTORY})
+target_link_libraries(${PROJECT_NAME} parse YAML)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${OUT_BINARY_DIRECTORY})

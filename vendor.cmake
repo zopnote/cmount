@@ -17,10 +17,7 @@ else()
 endif()
 
 
-include(${CMAKE_SOURCE_DIR}/vendor/cjson_conf.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/llvm_conf.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/curl_conf.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/yaml_conf.cmake)
-include(${CMAKE_SOURCE_DIR}/vendor/cthreads_conf.cmake)
-include(${CMAKE_SOURCE_DIR}/vendor/python_conf.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/dmon_conf.cmake)

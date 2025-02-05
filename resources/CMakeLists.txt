@@ -35,5 +35,3 @@ foreach(INDEX RANGE 0 1)
         endif()
     endforeach()
 endforeach()
-
-install(DIRECTORY templates DESTINATION ${OUT_RESOURCE_DIRECTORY})

@@ -2,8 +2,10 @@
 # a block list format. If not, the parser will not recognize the value.
 
 # A message cannot be longer than 32 lines.
+
 help:
-  - "Cmount (@CMAKE_BUILD_TYPE@) v@PROJECT_VERSION@ tooling for cross platform C-dependent development."
+  - ""
+  - "Cmount (@CMAKE_BUILD_TYPE@) v@PROJECT_VERSION@: Tooling for cross platform C-dependent development."
   - ""
   - "Common commands:"
   - "doctor       Status of installed tooling."
@@ -22,6 +24,17 @@ help:
   - "-h, --help       Shows information about a command."
   - "-v, --verbose    Prints further information about activity."
   - ""
+
 not_found:
-  - "Cannot found what your looking for: ${prefix}${argument}${suffix}"
+  - ""
+  - "Not found: ${prefix}${argument}${suffix}"
   - "To get more information about commands use -h."
+
+create_no_project_name:
+  - ""
+  - "Please define a project name."
+
+create_invalid_project_name:
+  - ""
+  - "\"${name}\" is not a valid name for a project."
+  - "Consider to only use under case latin characters and underscores."
