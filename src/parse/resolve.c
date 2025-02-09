@@ -49,66 +49,100 @@ static void scalar(
         }
     }
 }
+#define RESET       "\033[0m"
+#define RED         "\033[31m"
+#define GREEN       "\033[32m"
+#define YELLOW      "\033[33m"
+#define BLUE        "\033[34m"
+#define MAGENTA     "\033[35m"
+#define CYAN        "\033[36m"
+#define BOLD        "\033[1m"
+#define UNDERLINE   "\033[4m"
+
+const char* get_yaml_token_name(int token_type) {
+    static const char* token_names[] = {
+        "YAML_NO_TOKEN",
+        "YAML_STREAM_START_TOKEN",
+        "YAML_STREAM_END_TOKEN",
+        "YAML_VERSION_DIRECTIVE_TOKEN",
+        "YAML_TAG_DIRECTIVE_TOKEN",
+        "YAML_DOCUMENT_START_TOKEN",
+        "YAML_DOCUMENT_END_TOKEN",
+        "YAML_BLOCK_SEQUENCE_START_TOKEN",
+        "YAML_BLOCK_MAPPING_START_TOKEN",
+        "YAML_BLOCK_END_TOKEN",
+        "YAML_FLOW_SEQUENCE_START_TOKEN",
+        "YAML_FLOW_SEQUENCE_END_TOKEN",
+        "YAML_FLOW_MAPPING_START_TOKEN",
+        "YAML_FLOW_MAPPING_END_TOKEN",
+        "YAML_BLOCK_ENTRY_TOKEN",
+        "YAML_FLOW_ENTRY_TOKEN",
+        "YAML_KEY_TOKEN",
+        "YAML_VALUE_TOKEN",
+        "YAML_ALIAS_TOKEN",
+        "YAML_ANCHOR_TOKEN",
+        "YAML_TAG_TOKEN",
+        "YAML_SCALAR_TOKEN"
+    };
+
+    if (token_type >= 0 && token_type <= YAML_SCALAR_TOKEN) {
+        return token_names[token_type];
+    }
+    return "UNKNOWN_TOKEN";
+}
 
 static void scanRecursive(
     yaml_parser_t* parser,
     Iteration iteration
 ) {
-    yaml_token_t token, value;
-    while (yaml_parser_scan(&parser, &token)) {
-        if (token.type == iteration.end) {
-            goto bclean;
-        }
+    yaml_token_t token, next;
+    int index = 0;
+    char* lastKey = malloc(sizeof(char));
+    while (token.type != iteration.end) {
+        yaml_parser_scan(parser, &token);
+        index++;
+
+        printf("\n%s at index %d\n", get_yaml_token_name(token.type), index);
 
 
-        if(!yaml_parser_scan(&parser, &value)) {
-            goto bclean;
-        }
-
-        if (value.type == iteration.end) {
-            goto bclean;
-        }
-
-        printf("gre");
         if (token.type == YAML_KEY_TOKEN) {
-            printf("asd");
-            scalar(
-                iteration.entries,
-                iteration.size,
-                token.data.scalar.value,
-                value.data.scalar.value
-            );
-            goto cclean;
-        }
-
-        if (value.type == YAML_BLOCK_MAPPING_START_TOKEN) {
-            for (size_t i = 0; i < iteration.size; i++) {
-                if (!strcmp(
-                    iteration.entries[i].key,
-                    token.data.scalar.value
-                )) {
-                    scanRecursive(&parser, (Iteration){
-                        .parent = &iteration,
-                        .entries = iteration.entries[i].buffer,
-                        .size = iteration.entries[i].bufferSize,
-                        .end = YAML_BLOCK_END_TOKEN
-                    });
-                }
-            }
-        }
-
-        if (value.type == YAML_BLOCK_SEQUENCE_START_TOKEN) {
-
-        }
-
-        cclean:
-            yaml_event_delete(&token);
-            yaml_event_delete(&value);
+            yaml_parser_scan(parser, &next);
+            if (lastKey) free(lastKey);
+            lastKey = strdup(next.data.scalar.value);
+            printf(YELLOW "%s\n" RESET, lastKey);
+            yaml_token_delete(&token);
+            yaml_token_delete(&next);
             continue;
-        bclean:
-            yaml_event_delete(&token);
-            yaml_event_delete(&value);
-            break;
+        }
+
+        if (token.type == YAML_BLOCK_MAPPING_START_TOKEN) {
+            printf("---------------start\n");
+        }
+
+        if (token.type == YAML_VALUE_TOKEN) {
+            yaml_parser_scan(parser, &next);
+            if (!next.data.scalar.value) {
+                size_t i = 0;
+                for (i = 0; i < iteration.size; i++) {
+                    if (!strcmp(lastKey, iteration.entries[i].key)) {
+                        break;
+                    }
+                }
+
+                if (iteration.entries[i].type != entries) {
+                    continue;
+                }
+                scanRecursive(parser, (Iteration) {
+                    .parent = &iteration,
+                    .entries = iteration.entries[i].buffer,
+                    .size = iteration.entries[i].bufferSize,
+                    .end = YAML_BLOCK_END_TOKEN
+                });
+            }
+            yaml_token_delete(&token);
+            yaml_token_delete(&next);
+            continue;
+        }
     }
 }
 
@@ -127,10 +161,10 @@ static void resolveYamlString(
     yaml_parser_set_input_string(
         &parser, string, sizeof(char) * strlen(string));
 
-    yaml_event_t event;
+    printf(string);
+    yaml_token_t event;
     while (event.type != YAML_BLOCK_MAPPING_START_TOKEN) {
         yaml_parser_scan(&parser, &event);
-        printf("%d\n", event.type);
     }
 
     scanRecursive(&parser, (Iteration){

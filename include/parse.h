@@ -22,7 +22,7 @@ enum {
     integer,
     string,
     floating,
-    list
+    severed
 } typedef ParseType;
 
 struct {
