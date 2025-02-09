@@ -10,15 +10,15 @@
 
 #if _WIN64
 
-#include <direct.h>
-#define GET_CWD _getcwd
-#define MK_DIR _mkdir
+    #include <direct.h>
+    #define GET_CWD _getcwd
+    #define MK_DIR _mkdir
 
 #elif _POSIX_VERSION
 
-#include <unistd.h>
-#define GET_CWD getcwd
-#define MK_DIR mkdir
+    #include <unistd.h>
+    #define GET_CWD getcwd
+    #define MK_DIR mkdir
 
 #endif
 

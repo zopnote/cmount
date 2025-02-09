@@ -1,39 +1,37 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_C_COMPILER CLANG)
+find_program(CLANG_COMPILER clang)
+if(NOT CLANG_COMPILER)
+    message(FATAL_ERROR "Clang wurde nicht gefunden!")
+endif()
+set(CMAKE_C_COMPILER "${CLANG_COMPILER}")
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE debug)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL release)
-    set(CUSTOM_FLAGS " -static -fno-stack-protector -Wno-unknown-pragmas -Wno-deprecated-declarations -Wno-microsoft")
-endif()
-
-if(CMAKE_BUILD_TYPE STREQUAL debug)
-    set(CUSTOM_FLAGS " -g -fstack-protector -Wno-unknown-pragmas -Wno-deprecated-declarations -Wno-microsoft")
-endif()
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}${CUSTOM_FLAGS} -std=c2x")
-
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c2x -Wno-microsoft")
 
 project(cmount VERSION 0.1)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/.out/${CMAKE_BUILD_TYPE}/${PROJECT_NAME})
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/.out/${CMAKE_BUILD_TYPE}/${PROJECT_NAME}" CACHE PATH "Install path" FORCE)
 
 set(SRC_INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/include)
 
-install(DIRECTORY ${SRC_INCLUDE_DIRECTORY} DESTINATION ./)
+if(EXISTS ${SRC_INCLUDE_DIRECTORY})
+    install(DIRECTORY ${SRC_INCLUDE_DIRECTORY}/ DESTINATION include FILES_MATCHING PATTERN "*.h")
+endif()
 
-# Central definitions of output project structure
-include(${CMAKE_SOURCE_DIR}/structure.cmake)
+foreach(file structure.cmake vendor.cmake components.cmake)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/${file}")
+        include("${CMAKE_SOURCE_DIR}/${file}")
+    else()
+        message(FATAL_ERROR "Fehlende Datei: ${file}")
+    endif()
+endforeach()
 
-# Builds all third party libraries
-include(${CMAKE_SOURCE_DIR}/vendor.cmake)
-
-# Builds first party libraries and the executable
-include(${CMAKE_SOURCE_DIR}/components.cmake)
-
-add_subdirectory(resources)
+if(EXISTS "${CMAKE_SOURCE_DIR}/resources/CMakeLists.txt")
+    add_subdirectory(resources)
+else()
+    message(WARNING "Kein resources/CMakeLists.txt gefunden. Überspringe resources.")
+endif()

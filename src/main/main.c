@@ -14,21 +14,53 @@ static void test(
     char* arguments[],
     int argumentsLength
     ) {
-    char* value = malloc(sizeof(char) * 6);
+
+    char* fileBuffer = NULL;
+    FILE* file = fopen(schema_joinPaths(
+                appRootPath, INTERNAL_CONFIGURATION_PATH, ""), "r");
+
+    if (!file) {
+        perror("Failed to open file");
+    } else {
+        fseek(file, 0, SEEK_END);
+        const long fileSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        fileBuffer = calloc(fileSize + 1, fileSize);
+        if (fileBuffer)
+        {
+            const size_t bytesRead = fread(fileBuffer, 1, fileSize, file);
+            fileBuffer[bytesRead] = '\0';
+        }
+        fclose(file);
+    }
 
     ParseEntry entries[] = {
-        "test", string, value
+        "binary", string, NULL, 0,
+        "internal", string, NULL, 0,
+        "cache", string, NULL, 0,
+        "library", string, NULL, 0,
+        "include", string, NULL, 0,
+        "runtime", string, NULL, 0,
+        "config", string, NULL, 0,
+        "scripts", string, NULL, 0,
+        "templates", string, NULL, 0
     };
 
-    parse_resolveString(
-        "test: hello",
-        yaml,
-        entries,
-        sizeof(entries)
-    );
-    printf("test: %s", value);
-    fflush(stdout);
-    free(value);
+    if (fileBuffer) {
+        parse_resolveString(
+            fileBuffer,
+            yaml,
+            sizeof(entries) / sizeof(entries[0]),
+            entries
+        );
+    }
+    free(fileBuffer);
+
+    for (size_t i = 0; i < (sizeof(entries) / sizeof(entries[0])); i++) {
+        printf("key(%s), value(%s)", entries[i].key, (char*)entries[i].buffer);
+        fflush(stdout);
+    }
+    free(entries[0].buffer);
 }
 
 

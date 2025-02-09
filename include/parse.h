@@ -1,5 +1,16 @@
 #pragma once
-#include <stddef.h>
+
+#include <stdio.h>
+
+#ifdef _WIN64
+    #ifdef PARSE_EXPORTS
+        #define EXTERN __declspec(dllexport)
+    #else
+        #define EXTERN __declspec(dllimport)
+    #endif
+#else
+    #define EXTERN __attribute__((visibility("default")))
+#endif
 
 enum {
     yaml,
@@ -7,30 +18,29 @@ enum {
 } typedef ParseFormat;
 
 enum {
-    map,
+    entries,
     integer,
     string,
     floating,
     list
-  } typedef ParseType;
+} typedef ParseType;
 
 struct {
     char* key;
     ParseType type;
     void* buffer;
+    size_t bufferSize;
 } typedef ParseEntry;
 
-void parse_resolveString(
+EXTERN void parse_resolveString(
     const char* string,
     const ParseFormat format,
-    ParseEntry entriesBuffer[],
-    size_t entriesBufferSize
+    const size_t entriesBufferSize,
+    ParseEntry entriesBuffer[]
 );
-
-void parse_emitString(
+EXTERN void parse_emitString(
     char* stringBuffer,
-    ParseEntry entriesBuffer[],
-    size_t entriesBufferSize
+    const ParseFormat format,
+    const size_t entriesBufferSize,
+    ParseEntry entriesBuffer[]
 );
-
-
