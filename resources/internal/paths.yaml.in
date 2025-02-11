@@ -9,8 +9,6 @@ test:
   hello: yay
 
 listtest:
-  - name: hello
-    test: aswd
   - wa
   - was
   - zum

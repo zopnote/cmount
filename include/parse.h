@@ -17,12 +17,13 @@ enum {
     json
 } typedef ParseFormat;
 
+
 enum {
     entries,
     integer,
     string,
     floating,
-    severed
+    list
 } typedef ParseType;
 
 struct {

@@ -3,7 +3,6 @@
 
 
 typedef struct iteration {
-    struct iteration* parent;
     ParseEntry* entries;
     size_t size;
     yaml_token_type_t end;
@@ -23,12 +22,14 @@ static void scalar(
                 const long parsedValue = strtol(value, NULL, 10);
                 if (parsedValue >= INT_MIN || INT_MAX >= parsedValue) {
                     int* finalValue = malloc(sizeof(int));
+                entries[i].bufferSize = sizeof(int);
                     *finalValue = parsedValue;
                     entries[i].buffer = finalValue;
                 }
                 break;
             }
             if (entries[i].type == string) {
+                entries[i].bufferSize = sizeof(char) * strlen(key);
                 entries[i].buffer =
                     strdup(key);
                 break;
@@ -37,6 +38,7 @@ static void scalar(
                 double* const valuePtr = malloc(sizeof(double));
                 *valuePtr = strtod(key, NULL);
                 entries[i].buffer = valuePtr;
+                entries[i].bufferSize = sizeof(double);
                 break;
             }
             fprintf(
@@ -91,59 +93,136 @@ const char* get_yaml_token_name(int token_type) {
     return "UNKNOWN_TOKEN";
 }
 
+
+static void scanRecursive(
+    yaml_parser_t* parser, Iteration iteration);
+
+static void mapping(
+    const Iteration iteration,
+    const char* lastKey,
+    yaml_parser_t* parser
+) {
+    size_t i = 0;
+    for (i = 0; i < iteration.size; i++) {
+        if (!strcmp(lastKey, iteration.entries[i].key)) {
+            break;
+        }
+    }
+
+    if (iteration.entries[i].type != entries) {
+        return;
+    }
+    scanRecursive(parser, (Iteration) {
+        .entries = iteration.entries[i].buffer,
+        .size = iteration.entries[i].bufferSize,
+        .end = YAML_BLOCK_END_TOKEN
+    });
+}
+
 static void scanRecursive(
     yaml_parser_t* parser,
-    Iteration iteration
+    const Iteration iteration
 ) {
     yaml_token_t token, next;
     int index = 0;
-    char* lastKey = malloc(sizeof(char));
+    char* lastKey = NULL;
     while (token.type != iteration.end) {
         yaml_parser_scan(parser, &token);
         index++;
 
-        printf("\n%s at index %d\n", get_yaml_token_name(token.type), index);
+        if (token.type == YAML_BLOCK_ENTRY_TOKEN) {
+            yaml_parser_scan(parser, &next);
+            if (!next.data.scalar.value) {
+                yaml_token_delete(&token);
+                yaml_token_delete(&next);
+                continue;
+            }
 
+            for (size_t i = 0; i < iteration.size; i++) {
+                if (!strcmp(lastKey, iteration.entries[i].key)) {
+
+                    if (iteration.entries[i].type != list) {
+                        yaml_token_delete(&token);
+                        yaml_token_delete(&next);
+                        continue;
+                    }
+
+                    if (iteration.entries[i].buffer) {
+
+                        iteration.entries[i].bufferSize =
+                            iteration.entries[i].bufferSize + 1;
+
+                        char** entries = realloc(
+                            iteration.entries[i].buffer,
+                            sizeof(char*) *
+                            iteration.entries[i].bufferSize
+                        );
+
+                        entries[iteration.entries[i].bufferSize - 1] =
+                            strdup(next.data.scalar.value);
+
+                        iteration.entries[i].buffer =
+                            entries;
+
+                        yaml_token_delete(&token);
+                        yaml_token_delete(&next);
+                        continue;
+                    }
+
+                    char** entries = malloc(
+                        sizeof(char*)
+                    );
+
+                    entries[0] = strdup(
+                        next.data.scalar.value);
+
+                    iteration.entries[i].bufferSize = 1;
+
+                    iteration.entries[i].buffer = entries;
+                }
+            }
+        }
 
         if (token.type == YAML_KEY_TOKEN) {
             yaml_parser_scan(parser, &next);
             if (lastKey) free(lastKey);
             lastKey = strdup(next.data.scalar.value);
-            printf(YELLOW "%s\n" RESET, lastKey);
             yaml_token_delete(&token);
             yaml_token_delete(&next);
             continue;
         }
 
         if (token.type == YAML_BLOCK_MAPPING_START_TOKEN) {
-            printf("---------------start\n");
+            mapping(iteration, lastKey, parser);
+            yaml_token_delete(&token);
+            yaml_token_delete(&next);
+            continue;
         }
 
         if (token.type == YAML_VALUE_TOKEN) {
             yaml_parser_scan(parser, &next);
             if (!next.data.scalar.value) {
-                size_t i = 0;
-                for (i = 0; i < iteration.size; i++) {
-                    if (!strcmp(lastKey, iteration.entries[i].key)) {
-                        break;
-                    }
-                }
-
-                if (iteration.entries[i].type != entries) {
-                    continue;
-                }
-                scanRecursive(parser, (Iteration) {
-                    .parent = &iteration,
-                    .entries = iteration.entries[i].buffer,
-                    .size = iteration.entries[i].bufferSize,
-                    .end = YAML_BLOCK_END_TOKEN
-                });
+                mapping(iteration, lastKey, parser);
+                yaml_token_delete(&token);
+                yaml_token_delete(&next);
+                continue;
             }
+
+            scalar(
+                iteration.entries,
+                iteration.size,
+                lastKey,
+                next.data.scalar.value
+            );
+
             yaml_token_delete(&token);
             yaml_token_delete(&next);
             continue;
         }
     }
+    free(lastKey);
+    if (&token) yaml_token_delete(&token);
+    if (&next) yaml_token_delete(&next);
 }
 
 
@@ -161,14 +240,12 @@ static void resolveYamlString(
     yaml_parser_set_input_string(
         &parser, string, sizeof(char) * strlen(string));
 
-    printf(string);
     yaml_token_t event;
     while (event.type != YAML_BLOCK_MAPPING_START_TOKEN) {
         yaml_parser_scan(&parser, &event);
     }
 
     scanRecursive(&parser, (Iteration){
-        .parent = NULL,
         .entries = entriesBuffer,
         .size = entriesBufferSize,
         .end = YAML_STREAM_END_TOKEN
