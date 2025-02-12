@@ -33,14 +33,21 @@ static void test(
         }
         fclose(file);
     }
-
+    ParseEntry testEntries[] = {
+        "hello", string, NULL, 0,
+    };
     ParseEntry parseEntries[] = {
         "binary", string, NULL, 0,
         "internal", string, NULL, 0,
         "cache", string, NULL, 0,
         "listtest", list, NULL, 0,
         "library", string, NULL, 0,
-        "test", entries, NULL, 0,
+
+        "test",
+        map,
+        testEntries,
+        sizeof(testEntries) / sizeof(testEntries[0]),
+
         "include", string, NULL, 0,
         "runtime", string, NULL, 0,
         "config", string, NULL, 0,
@@ -49,16 +56,16 @@ static void test(
     };
 
     if (fileBuffer) {
-        parse_resolveString(
+        parse_resolveYamlString(
             fileBuffer,
-            yaml,
+            parseEntries,
             sizeof(parseEntries) / sizeof(parseEntries[0]),
-            parseEntries
+            true
         );
     }
     free(fileBuffer);
-
-    if (parseEntries[5].buffer) printf("exist a");
+    const ParseEntry* further = parseEntries[5].buffer;
+    printf("\nval: %s\n", (char*)further[0].buffer);
     char** list = parseEntries[3].buffer;
     char* string = list[3];
     printf("exists %s", string);
