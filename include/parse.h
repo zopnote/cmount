@@ -22,7 +22,7 @@ enum {
 } typedef ParseFormat;
 
 /**
- * @brief The type the buffer of an entry has.
+ * @brief The type the buffer of an entry have.
  *
  * Maps are further ParseEntry arrays which must be
  * already defined and set as buffer of an entry to store
