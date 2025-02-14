@@ -28,9 +28,9 @@ logger_t* logger_create(
 }
 
 void logger_setFile(
-    Logger* const logger,
-    const bool independentFile,
-    const char* directoryPath
+    logger_t* logger,
+    const bool save_in_independent_file,
+    const char* directory_path
 ) {
 
     const char* standardLogName = "latest.log";
@@ -40,7 +40,7 @@ void logger_setFile(
     ]; fileName[0] = '\0';
 
 
-    if (independentFile) {
+    if (save_in_independent_file) {
         char prefix[
             strlen(logger->name) * sizeof(char) + 1];
 
@@ -52,14 +52,14 @@ void logger_setFile(
 
 
     char filePath[
-        strlen(directoryPath) * sizeof(char) +
+        strlen(directory_path) * sizeof(char) +
         strlen(fileName) * sizeof(char) + 1
     ]; filePath[0] = '\0';
 
-    sprintf(filePath, "%s/%s", directoryPath, fileName);
+    sprintf(filePath, "%s/%s", directory_path, fileName);
     printf("File path is %s.", filePath);
 
-    if (!access(directoryPath, 0)) {
+    if (!access(directory_path, 0)) {
         FILE* openedFile = fopen(filePath, "r");
 
         char current;

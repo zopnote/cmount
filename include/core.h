@@ -70,11 +70,10 @@ inline logger_color_t get_color(
 typedef struct logger_s logger_t;
 
 typedef void (*logger_callback_t) (
-    logger_t* const logger,
-    const logger_color_t color,
+    logger_t* logger,
+    logger_significance_t significance,
     const char* format,
-    ...
-);
+    ...);
 
 struct logger_s {
     const char* name;
@@ -95,6 +94,7 @@ logger_t* logger_create(
 
 void logger_set_file(
     logger_t* logger,
+    bool save_in_independent_file,
     const char* directory_path
 );
 
@@ -103,7 +103,6 @@ void logger_dispose(
 
 void logger_write(
     logger_t* logger,
-    logger_color_t color,
     logger_significance_t significance,
     const char* format,
     ...);
@@ -114,8 +113,16 @@ struct message {
     va_list args;
 };
 
+/**
+ * @brief 
+ * @param logger 
+ * @param messages 
+ * @param significance 
+ * @param messages_length 
+ */
 void logger_writeSequence(
     logger_t* logger,
     const struct message* messages,
+    logger_significance_t significance,
     size_t messages_length
 );

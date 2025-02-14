@@ -151,7 +151,9 @@ static void addToList(
 }
 
 
-static const char* get_yaml_token_name(const int token_identifier) {
+static const char* get_yaml_token_name(
+    const int token_identifier
+) {
     static const char* restrict token_names[] = {
         "NO_TOKEN",
         "STREAM_START_TOKEN",
