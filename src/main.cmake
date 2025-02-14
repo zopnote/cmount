@@ -2,6 +2,6 @@ file(GLOB_RECURSE SRC_FILES_MAIN_EXECUTABLE ${SRC_COMPONENT_DIRECTORY}/main/*.c)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES_MAIN_EXECUTABLE})
 
-target_link_libraries(${PROJECT_NAME} parse log YAML)
+target_link_libraries(${PROJECT_NAME} parse core YAML)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${OUT_BINARY_DIRECTORY})

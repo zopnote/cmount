@@ -6,7 +6,7 @@ if(NOT CLANG_COMPILER)
 endif()
 set(CMAKE_C_COMPILER "${CLANG_COMPILER}")
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+set(CMAKE_C_STANDARD 23)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
@@ -15,6 +15,8 @@ endif()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c2x -Wno-microsoft -Wno-deprecated-declarations")
 
 project(cmount VERSION 0.1)
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/.out/${CMAKE_BUILD_TYPE}/${PROJECT_NAME}" CACHE PATH "Install path" FORCE)
 

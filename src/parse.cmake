@@ -6,7 +6,7 @@ add_library(parse SHARED ${PARSE_SOURCE_FILES})
 target_include_directories(parse PUBLIC ${SRC_INCLUDE_DIRECTORY})
 
 target_link_libraries(parse
-        log
+        core
         YAML
 )
 

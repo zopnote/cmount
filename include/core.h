@@ -3,10 +3,6 @@
 #include <stdio.h>
 #include <time.h>
 
-char* os_get_current_working_directory();
-char* os_get_executable_directory();
-char* os_create_directory();
-
 /**
  * @brief The importance of a message.
  *
@@ -15,6 +11,7 @@ char* os_create_directory();
 typedef enum {
     error,
     warning,
+    status,
     info,
     note
 } logger_significance_t;
@@ -97,7 +94,7 @@ struct logger_s {
     FILE* file;
     bool verbose;
     bool should_print_in_console;
-    logger_callback_t logger_write_function;
+    logger_callback_t logger_log_function;
 } typedef logger_t;
 
 
@@ -114,27 +111,27 @@ struct message {
  * @brief Creates a new logger.
  *
  * It is regardless if your set verbose and should_print_in_console,
- * if you create your own logger_write_function that ignores the fields of the
+ * if you create your own logger_log_function that ignores the fields of the
  * structure they are.
  *
  * @param name Name of the logger that will be printed.
  * @param verbose If logger_significance_e::note messages should be printed to stdout.
  * @param should_print_in_console If anything should be printed to stdout.
- * @param logger_write_function Function that will receive all messages the logger gets.
+ * @param logger_log_function Function that will receive all messages the logger gets.
  * @return A new logger with the processed values.
  */
 logger_t* logger_create(
     const char* name,
     bool verbose,
     bool should_print_in_console,
-    logger_callback_t logger_write_function
+    logger_callback_t logger_log_function
 );
 
 /**
  * @brief Adds a file target to the logger.
  *
  * Note, that it always depends on the
- * logger_write_function() where messages go.
+ * logger_log_function() where messages go.
  *
  * This function is simply a wrapper to create a file,
  * checks if the file exists before and then continues with placement
@@ -163,7 +160,7 @@ void logger_dispose(
 /**
  * @brief Writes in a formatted string to the logger targets.
  *
- * If the logger file is set, print will write all messages to the file.
+ * If the logger file is set, all messages are written to the file.
  * Printing to the stdout depends on should_print_in_console of logger.
  * Verbose messages will always be written into the file,
  * but if it would be printed in the stdout depends on verbose of logger.
@@ -185,7 +182,7 @@ void logger_write(
  * A sequence of messages can be used to print in
  * colored messages or strings from different locations in memory.
  *
- * If the logger file is set, print will write all messages to the file.
+ * If the logger file is set, all messages are written to the file.
  * Printing to the stdout depends on should_print_in_console of logger.
  * Verbose messages will always be written into the file,
  * but if it would be printed in the stdout depends on verbose of logger.
@@ -195,7 +192,7 @@ void logger_write(
  * @param messages Array of format able colored strings.
  * @param messages_length Length of the array.
  */
-void logger_writeSequence(
+void logger_write_sequence(
     logger_t* logger,
     logger_significance_t significance,
     const struct message* messages,

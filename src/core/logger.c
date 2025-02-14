@@ -6,12 +6,12 @@ logger_t* logger_create(
     const char* prefix,
     const bool verbose,
     const bool should_print_in_console,
-    const logger_callback_t logger_write_function
+    const logger_callback_t logger_log_function
 ) {
 
     const time_t t = time(NULL);
 
-    logger_t* logger = malloc(sizeof logger_t);
+    logger_t* logger = malloc(sizeof(logger_t));
 
     if (!logger) return NULL;
 
@@ -19,7 +19,7 @@ logger_t* logger_create(
         .name = prefix,
         .verbose = verbose,
         .should_print_in_console = should_print_in_console,
-        .logger_write_function = logger_write_function
+        .logger_log_function = logger_log_function
     };
 
     localtime_s(logger->time, &t);
@@ -59,7 +59,7 @@ void logger_setFile(
     sprintf(filePath, "%s/%s", directory_path, fileName);
     printf("File path is %s.", filePath);
 
-    if (!access(directory_path, 0)) {
+    if (false) {
         FILE* openedFile = fopen(filePath, "r");
 
         char current;
