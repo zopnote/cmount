@@ -64,6 +64,7 @@ static void scalar(
 
                 double* const value_ptr =
                     malloc(sizeof(double));
+
                 entries[i].size = sizeof(double);
 
                 *value_ptr = strtod(key, NULL);
@@ -104,9 +105,9 @@ static void parse_further_entries_in_map(
 
 
 /**
- * @brief Either, if the list already exists adds the value to it, or if not a new array will be created with the value.
+ * @brief Either, if the list already exists adds the value to it, or if not, a new array will be created with the value.
  */
-static void addToList(
+static void add_to_or_create_list(
     const parse_state_t* state,
     const char* key,
     const char* value
@@ -236,7 +237,7 @@ static void scan_recursive(
                 continue;
             }
 
-            addToList(&state, lastKey, next.data.scalar.value);
+            add_to_or_create_list(&state, lastKey, next.data.scalar.value);
         }
 
     }
@@ -248,7 +249,7 @@ static void scan_recursive(
 void parse_resolve_yaml_string(
     const char* string,
     parse_entry_t* entries,
-    size_t entriesLength,
+    size_t entries_length,
     const logger_t* logger
 ) {
 
@@ -271,7 +272,7 @@ void parse_resolve_yaml_string(
 
     scan_recursive(&parser, (parse_state_t) {
         .entries = entries,
-        .size = entriesLength,
+        .size = entries_length,
         .end = YAML_STREAM_END_TOKEN
     });
 
