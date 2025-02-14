@@ -1,5 +1,9 @@
+
 if(NOT CURL_DIRECTORY)
-    message(FATAL_ERROR "CURL_DIR is not set.")
+    find_package(CURL REQUIRED)
+    if (NOT CURL)
+        message(FATAL_ERROR "CURL is not found. Consider to set it explicit by CURL_DIRECTORY var.")
+    endif ()
 endif()
 
 file(GLOB CURL_LIBRARY ${CURL_DIRECTORY}/lib/libcurl.a)
