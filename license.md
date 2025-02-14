@@ -1,6 +1,14 @@
-MIT License
+# MIT License
 
-Copyright (c) 2025 Lenny Siebert
+> Short:
+> * **Use**: Use for any purpose (personal, academic, commercial).
+> * **Modify**: Modify and create derivative works.
+> * **Distribute**: Distribute original or modified software.
+> * **Private Use**: Use privately without disclosing modifications.
+> * **Can't Remove License**: Can't remove or alter the license and copyright notice.
+> * **Warranty**: No warranty; authors aren't liable for damages.
+
+### Copyright (c) 2025 Lenny Siebert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
