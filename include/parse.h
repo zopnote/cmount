@@ -1,25 +1,15 @@
 #pragma once
 
 #include <stdio.h>
-
-#ifdef _WIN64
-    #ifdef PARSE_EXPORTS
-        #define EXTERN __declspec(dllexport)
-    #else
-        #define EXTERN __declspec(dllimport)
-    #endif
-#else
-    #define EXTERN __attribute__((visibility("default")))
-#endif
-
+#include "core.h"
 
 /**
  * @brief Available configuration types of the parse collection.
  */
-enum {
+enum parse_format_e {
     yaml,
     json
-} typedef ParseFormat;
+};
 
 /**
  * @brief The type the buffer of an entry has.
@@ -31,13 +21,13 @@ enum {
  * Lists are an array of unparsed strings of the parsed document.
  * Their buffer should not be set at first definition.
  */
-enum {
+enum parse_type_e {
     map,
     integer,
     string,
     floating,
     list
-} typedef ParseType;
+};
 
 
 /**
@@ -57,21 +47,31 @@ enum {
  */
 struct {
     char* key;
-    ParseType type;
+    enum parse_type_e type;
     void* buffer;
     size_t size;
-} typedef ParseEntry;
+} typedef parse_entry_t;
 
 /**
  * @brief Initialize the yaml parser with the input string and continues with the scan.
  *
  * The entries array will be filled with the found values.
  */
-EXTERN void parse_resolveYamlString(
-    const char* const string,
-    ParseEntry* const entries,
-    const size_t entriesLength,
-    const bool verbose
+void parse_resolve_yaml_string(
+    const char* string,
+    parse_entry_t* entries,
+    size_t entriesLength,
+    const logger_t* logger
+);
+
+/**
+ * @brief Writes the entries to the string buffer with the desired configuration format.
+ */
+void parse_emit_yaml_string(
+    char* buffer,
+    const parse_entry_t* entries,
+    size_t entries_length,
+    const logger_t* logger
 );
 
 /**
@@ -79,18 +79,19 @@ EXTERN void parse_resolveYamlString(
  *
  * The entries array will be filled with the found values.
  */
-EXTERN void parse_resolveJsonString(
-    const char* const string,
-    ParseEntry* const entries,
-    const size_t entriesLength
+void parse_resolve_json_string(
+    const char* string,
+    parse_entry_t* entries,
+    size_t entries_length,
+    const logger_t* logger
 );
 
 /**
  * @brief Writes the entries to the string buffer with the desired configuration format.
  */
-EXTERN void parse_emitString(
-    char* stringBuffer,
-    const ParseFormat format,
-    const ParseEntry* const entries,
-    const size_t entriesLength
+void parse_emit_json_string(
+    char* buffer,
+    const parse_entry_t* entries,
+    size_t entries_length,
+    const logger_t* logger
 );

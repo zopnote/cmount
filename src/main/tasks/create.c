@@ -1,26 +1,12 @@
 #include "create.h"
 
 
+#include <core.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "../schema/messages.h"
 #include "../schema/paths.h"
-
-
-#if _WIN64
-
-    #include <direct.h>
-    #define GET_CWD _getcwd
-    #define MK_DIR _mkdir
-
-#elif _POSIX_VERSION
-
-    #include <unistd.h>
-    #define GET_CWD getcwd
-    #define MK_DIR mkdir
-
-#endif
 
 
 
@@ -32,8 +18,9 @@ static bool createDirectory(
 
     strcpy(fullPath, path);
     strcat(fullPath, name);
-    printf(fullPath);
-    MK_DIR(fullPath);
+    printf("%s", fullPath);
+    mkdir(fullPath);
+    return true;
 }
 
 
@@ -76,7 +63,7 @@ void create(
 
     char workingDirectory[256];
 
-    GET_CWD(workingDirectory, sizeof(workingDirectory));
+    getcwd(workingDirectory, sizeof(workingDirectory));
 
     bool result =
         copyDirectoryContent(appTemplatePath, workingDirectory);

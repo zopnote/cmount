@@ -10,19 +10,18 @@
  * the yaml parser should iterate to in the case of scanning.
  */
 typedef struct {
-    ParseEntry* const entries;
+    parse_entry_t* const entries;
     const size_t size;
     const yaml_token_type_t end;
-} ParseState;
+} parse_state_t;
 
 
 /**
  * @brief Scans a yaml document stored in the parser and inserts the awaited data in the entries array given by the state structure.
  */
-static void scanRecursive(
-    yaml_parser_t* const parser,
-    const ParseState state,
-    const bool verbose
+static void scan_recursive(
+    yaml_parser_t* parser,
+    parse_state_t state
 );
 
 
@@ -30,22 +29,22 @@ static void scanRecursive(
  * @brief Parses the scalar value string into the corresponding type and set the buffer of the entry by the key in the entries array.
  */
 static void scalar(
-    ParseEntry* const entries,
+    parse_entry_t* const entries,
     const size_t length,
-    const char* const key,
-    const char* const value
+    const char* key,
+    const char* value
 ) {
     for (size_t i = 0; i < length; i++) {
         if (!strcmp(entries[i].key, key)) {
 
             if (entries[i].type == integer) {
-                const long parsedValue =
+                const long parsed_value =
                     strtol(value, NULL, 10);
 
-                if (parsedValue >= INT_MIN || INT_MAX >= parsedValue) {
+                if (parsed_value >= INT_MIN || INT_MAX >= parsed_value) {
                     int* finalValue = malloc(sizeof(int));
 
-                    *finalValue = parsedValue;
+                    *finalValue = parsed_value;
                     entries[i].buffer = finalValue;
 
                     entries[i].size = sizeof(int);
@@ -63,12 +62,12 @@ static void scalar(
 
             if (entries[i].type == floating) {
 
-                double* const valuePtr =
+                double* const value_ptr =
                     malloc(sizeof(double));
                 entries[i].size = sizeof(double);
 
-                *valuePtr = strtod(key, NULL);
-                entries[i].buffer = valuePtr;
+                *value_ptr = strtod(key, NULL);
+                entries[i].buffer = value_ptr;
                 break;
             }
         }
@@ -79,11 +78,10 @@ static void scalar(
 /**
  * @brief Continues the scan by the parser until the map ends and insert the awaited data in the entries array of the state structure.
  */
-static void parseFurtherEntriesInMap(
-    const ParseState* const state,
-    const char* const key,
-    yaml_parser_t* const parser,
-    const bool verbose
+static void parse_further_entries_in_map(
+    const parse_state_t* state,
+    const char* key,
+    yaml_parser_t* parser
 ) {
 
     size_t i = 0;
@@ -97,11 +95,11 @@ static void parseFurtherEntriesInMap(
         return;
     }
 
-    scanRecursive(parser, (ParseState) {
+    scan_recursive(parser, (parse_state_t) {
         .entries = state->entries[i].buffer,
         .size = state->entries[i].size,
         .end = YAML_BLOCK_END_TOKEN
-    }, verbose);
+    });
 }
 
 
@@ -109,9 +107,9 @@ static void parseFurtherEntriesInMap(
  * @brief Either, if the list already exists adds the value to it, or if not a new array will be created with the value.
  */
 static void addToList(
-    const ParseState* const state,
-    const char* const key,
-    const char* const value
+    const parse_state_t* state,
+    const char* key,
+    const char* value
 ) {
 
     for (size_t i = 0; i < state->size; i++) {
@@ -152,8 +150,9 @@ static void addToList(
     }
 }
 
-static const char* getYamlTokenName(const int tokenType) {
-    static const char* const tokenNames[] = {
+
+static const char* get_yaml_token_name(const int token_identifier) {
+    static const char* restrict token_names[] = {
         "NO_TOKEN",
         "STREAM_START_TOKEN",
         "STREAM_END_TOKEN",
@@ -177,40 +176,25 @@ static const char* getYamlTokenName(const int tokenType) {
         "TAG_TOKEN",
         "SCALAR_TOKEN"
     };
-    if (tokenType >= 0 && tokenType <= YAML_SCALAR_TOKEN) {
-        return tokenNames[tokenType];
+    if (token_identifier >= 0 && token_identifier <= YAML_SCALAR_TOKEN) {
+        return token_names[token_identifier];
     }
     return "UNKNOWN_TOKEN";
 }
 
-static void scanRecursive(
-    yaml_parser_t* const parser,
-    const ParseState state,
-    const bool verbose
+
+static void scan_recursive(
+    yaml_parser_t* parser,
+    const parse_state_t state
 ) {
 
     yaml_token_t token, next;
     char* lastKey = NULL;
 
-
-    if (verbose) {
-        fprintf(
-            stdout, "\n\nFound entries for the current level: ");
-
-        for (size_t i = 0; i < state.size; i++) {
-            fprintf(stdout, "%s; ", state.entries[i].key);
-        }
-
-        fprintf(
-            stdout, "\n\nStart yaml scan and further insertion...\n");
-    }
-
     while (token.type != state.end && next.type != state.end) {
         if (&token) yaml_token_delete(&token);
         if (&next) yaml_token_delete(&next);
         yaml_parser_scan(parser, &token);
-
-        if (verbose) fprintf(stdout, "%s; ", getYamlTokenName(token.type));
 
         if (token.type == YAML_KEY_TOKEN) {
             yaml_parser_scan(parser, &next);
@@ -220,8 +204,8 @@ static void scanRecursive(
         }
 
         if (token.type == YAML_BLOCK_MAPPING_START_TOKEN) {
-            parseFurtherEntriesInMap(
-                &state, lastKey, parser, verbose);
+            parse_further_entries_in_map(
+                &state, lastKey, parser);
             continue;
         }
 
@@ -229,8 +213,8 @@ static void scanRecursive(
             yaml_parser_scan(parser, &next);
 
             if (!next.data.scalar.value) {
-                parseFurtherEntriesInMap(
-                    &state, lastKey, parser, verbose);
+                parse_further_entries_in_map(
+                    &state, lastKey, parser);
                 continue;
             }
 
@@ -255,27 +239,19 @@ static void scanRecursive(
 
     }
 
-    if (verbose) fprintf(
-        stdout,
-        "\n\n\nFinished the scan until the token %s.\n",
-        getYamlTokenName(state.end)
-    );
-
     if (lastKey) free(lastKey);
 }
 
 
-void parse_resolveYamlString(
-    const char* const string,
-    ParseEntry* const entries,
-    const size_t entriesLength,
-    const bool verbose
+void parse_resolve_yaml_string(
+    const char* string,
+    parse_entry_t* entries,
+    size_t entriesLength,
+    const logger_t* logger
 ) {
-    if (verbose) fprintf(stdout, "\n");
 
     yaml_parser_t parser;
     if (!yaml_parser_initialize(&parser)) {
-        fprintf(stderr, "\nFailed to initialize parser\n");
         return;
     }
 
@@ -287,23 +263,15 @@ void parse_resolveYamlString(
         yaml_parser_scan(&parser, &event);
 
         if (event.type == YAML_NO_TOKEN) {
-            fprintf(
-                stderr,
-                "\nParser data is invalid: %s\n",
-                string
-            );
             return;
         }
     }
 
-    if (verbose) fprintf(
-        stdout, "\nYaml parser is initialized...\n");
-
-    scanRecursive(&parser, (ParseState) {
+    scan_recursive(&parser, (parse_state_t) {
         .entries = entries,
         .size = entriesLength,
         .end = YAML_STREAM_END_TOKEN
-    }, verbose);
+    });
 
     yaml_parser_delete(&parser);
 }
