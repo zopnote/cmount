@@ -20,10 +20,10 @@ else()
     file(GLOB LLVM_LIBRARIES ${LLVM_LIBRARY_DIR}/lib*.a)
 endif()
 
-add_library(LLVM INTERFACE)
+add_library(LLVM_CLANG INTERFACE)
 
-target_include_directories(LLVM INTERFACE ${LLVM_INCLUDE_DIRS})
+target_include_directories(LLVM_CLANG INTERFACE ${LLVM_INCLUDE_DIRS})
 
-target_link_libraries(LLVM INTERFACE ${LLVM_LIBRARIES})
+target_link_libraries(LLVM_CLANG INTERFACE ${LLVM_LIBRARIES})
 
 install(FILES ${LLVM_SHARED_LIB_BINARIES} DESTINATION ${OUT_BINARY_DIRECTORY})
