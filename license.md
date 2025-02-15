@@ -1,13 +1,4 @@
-# MIT License
-
-> Short:
-> * **Use**: Use for any purpose (personal, academic, commercial).
-> * **Modify**: Modify and create derivative works.
-> * **Distribute**: Distribute original or modified software.
-> * **Private Use**: Use privately without disclosing modifications.
-> * **Can't Remove License**: Can't remove or alter the license and copyright notice.
-> * **Warranty**: No warranty; authors aren't liable for damages.
-
+MIT License
 ### Copyright (c) 2025 Lenny Siebert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,3 +18,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+> Short:
+> * **Use**: Use for any purpose (personal, academic, commercial).
+> * **Modify**: Modify and create derivative works.
+> * **Distribute**: Distribute original or modified software.
+> * **Private Use**: Use privately without disclosing modifications.
+> * **Can't Remove License**: Can't remove or alter the license and copyright notice.
+> * **Warranty**: No warranty; authors aren't liable for damages.
+
