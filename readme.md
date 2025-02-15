@@ -3,7 +3,7 @@ Unifying application for efficient and C-dependent
 program development.
 
 Projects that built with Cmount profits of a modern and productive
-development cycle as well of cross-platform targets. 
+development cycle, easy extensibility, performance as well as cross-platform targets. 
 Users of software built with Cmount also profits by easy modding capabilities 
 (as long the developer want) made possible by Cmount's unification protocol.
 
