@@ -1,8 +1,24 @@
 #pragma once
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
+
+void os_get_current_working_directory(
+    char* buffer,
+    size_t buffer_size
+);
+
+void os_get_executable_directory(
+    char* buffer,
+    size_t buffer_size
+);
+
+bool os_can_access_file(const char* file_path);
+
+bool os_make_directory(const char* directory_path);
+
 
 /**
  * @brief The importance of a message.
@@ -13,8 +29,7 @@ typedef enum {
     error,
     warning,
     status,
-    info,
-    note
+    info
 } logger_significance_t;
 
 /**
@@ -43,8 +58,6 @@ enum logger_colors_e {
     light_blue,
     purple,
     pink,
-    violet,
-    orange,
     yellow
 };
 
@@ -56,18 +69,16 @@ inline logger_color_t get_color(
 ) {
     static logger_color_t logger_colors[] = {
         none, 0,
-        red, 124,
-        red_accent, 196,
-        green, 2,
-        green_accent, 77,
-        blue, 4,
-        blue_accent, 38,
-        light_blue, 33,
-        purple, 207,
-        pink, 200,
-        violet, 54,
-        orange, 202,
-        yellow, 11
+        red, 31,
+        red_accent, 91,
+        green, 32,
+        green_accent, 92,
+        blue, 34,
+        blue_accent, 94,
+        light_blue, 36,
+        purple, 35,
+        pink, 95,
+        yellow, 33
     };
     return logger_colors[color];
 }
@@ -105,8 +116,9 @@ struct logger_s {
 struct message {
     const logger_color_t color;
     const char* format;
-    va_list args;
+    char* va_list_args;
 };
+
 
 /**
  * @brief Creates a new logger.
@@ -128,8 +140,9 @@ logger_t* logger_create(
     logger_callback_t logger_log_function
 );
 
+
 /**
- * @brief Adds a file target to the logger.
+ * @brief Creates and add a file target to the logger.
  *
  * Note, that it always depends on the
  * logger_log_function() where messages go.
@@ -142,11 +155,48 @@ logger_t* logger_create(
  * @param name_file_after_logger_name If the file should be named after the name field of the logger structure.
  * @param directory_path The path where the logger file and its predecessors will be placed.
  */
-void logger_set_file(
+void logger_create_file_target(
     logger_t* logger,
     bool name_file_after_logger_name,
     const char* directory_path
 );
+
+
+/**
+ * @brief Adds a file target to the logger.
+ *
+ * Note, that it always depends on the
+ * logger_log_function() where messages go.
+ *
+ * Let the file write down messages to a specific file pointer.
+ *
+ * @param logger The logger which will get a file target.
+ * @param file The file that the logger will write to.
+ */
+inline void logger_add_file_target(
+    logger_t* logger,
+    FILE* file
+) {
+    logger->file = file;
+}
+
+
+/**
+ * @brief Adds a file target to the logger.
+ *
+ * Note, that it always depends on the
+ * logger_log_function() where messages go.
+ *
+ * Let the file write down messages to a specific file pointer.
+ *
+ * @param directory_path The directory in which logs will be cleaned up.
+ * @param remove_latest_logs If false the latest logs will remain untouched.
+ */
+void logger_cleanup_logs(
+    const char* directory_path,
+    bool remove_latest_logs
+);
+
 
 /**
  * @brief Disposes the logger and closes the file if set.
@@ -157,6 +207,7 @@ void logger_set_file(
  */
 void logger_dispose(
     logger_t* logger);
+
 
 /**
  * @brief Writes in a formatted string to the logger targets.
@@ -176,6 +227,7 @@ void logger_write(
     logger_significance_t significance,
     const char* format,
     ...);
+
 
 /**
  * @brief Writes a sequence of strings in the logger.
