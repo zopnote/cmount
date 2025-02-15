@@ -1,23 +1,67 @@
 #pragma once
 
+// ReSharper disable CppUnusedIncludeDirective
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
 
-void os_get_current_working_directory(
+
+/**
+ * @brief Gets the directory the program runs at.
+ *
+ * @param buffer The buffer the path will be written to.
+ * @param buffer_size Size of the buffer.
+ * @return Returns if the buffer is set.
+ */
+bool os_get_current_working_directory(
     char* buffer,
     size_t buffer_size
 );
 
-void os_get_executable_directory(
+
+/**
+ * @brief Gets the directory the executable is in.
+ *
+ * @param buffer The buffer the path will be written to.
+ * @param buffer_size Size of the buffer.
+ * @return Returns if the buffer is set.
+ */
+bool os_get_executable_directory(
     char* buffer,
     size_t buffer_size
 );
 
+
+/**
+ * @brief Tests if a file can ba accessed.
+ *
+ * @param file_path Path of the file that will be tested for.
+ * @return Returns if the file can be accessed.
+ */
 bool os_can_access_file(const char* file_path);
 
+
+/**
+ * @brief Creates a directory.
+ *
+ * @param directory_path Path of the directory that should be created.
+ * @return Returns if the creation of the directory succeeded.
+ */
 bool os_make_directory(const char* directory_path);
+
+
+/**
+ * @brief Gets the files by path in a directory.
+ *
+ * @param file_paths_buffer Buffer the found file paths will be saved to.
+ * @param directory_path Path of the directory that will be scanned.
+ * @return Returns the length of the buffer array, which is the count of found files.
+ */
+int os_get_directory_files(
+    char*** file_paths_buffer,
+    const char* directory_path
+);
 
 
 /**
@@ -31,6 +75,7 @@ typedef enum {
     status,
     info
 } logger_significance_t;
+
 
 /**
  * @brief Color for a message that will be used if printing in the command line.
@@ -61,6 +106,7 @@ enum logger_colors_e {
     yellow
 };
 
+
 /**
  * @brief Returns the actual logger_color_t values which are predefined for the logger_colors_e enum.
  */
@@ -83,7 +129,9 @@ inline logger_color_t get_color(
     return logger_colors[color];
 }
 
+
 typedef struct logger_s logger_t;
+
 
 /**
  * @brief Callback for a logger function.
@@ -93,6 +141,7 @@ typedef void (*logger_callback_t) (
     logger_significance_t significance,
     const char* format,
     ...);
+
 
 /**
  * @brief Represents a logger, its conditionals and targets.
@@ -152,12 +201,12 @@ logger_t* logger_create(
  * as well as sets the logger file field.
  *
  * @param logger The logger which will get a file target.
- * @param name_file_after_logger_name If the file should be named after the name field of the logger structure.
+ * @param file_should_be_named_after_logger If the file should be named after the name field of the logger structure.
  * @param directory_path The path where the logger file and its predecessors will be placed.
  */
 void logger_create_file_target(
     logger_t* logger,
-    bool name_file_after_logger_name,
+    bool file_should_be_named_after_logger,
     const char* directory_path
 );
 
@@ -189,24 +238,11 @@ inline void logger_add_file_target(
  *
  * Let the file write down messages to a specific file pointer.
  *
- * @param directory_path The directory in which logs will be cleaned up.
- * @param remove_latest_logs If false the latest logs will remain untouched.
+ * @param logs_directory_path The directory in which logs will be cleaned up.
  */
 void logger_cleanup_logs(
-    const char* directory_path,
-    bool remove_latest_logs
+    const char* logs_directory_path
 );
-
-
-/**
- * @brief Disposes the logger and closes the file if set.
- *
- * No values of logger should be used after disposal.
- *
- * @param logger The logger which fields will be freed.
- */
-void logger_dispose(
-    logger_t* logger);
 
 
 /**
@@ -251,3 +287,14 @@ void logger_write_sequence(
     const struct message* messages,
     size_t messages_length
 );
+
+
+/**
+ * @brief Disposes the logger and closes the file if set.
+ *
+ * No values of logger should be used after disposal.
+ *
+ * @param logger The logger which fields will be freed.
+ */
+void logger_dispose(
+    logger_t* logger);
