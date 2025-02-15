@@ -7,6 +7,8 @@ development cycle, easy extensibility, performance as well as cross-platform tar
 Users of software built with Cmount also profits by easy modding capabilities 
 (as long the developer want) made possible by Cmount's unification protocol.
 
+And no worries, Cmount is well documented.
+
 ---
 # Goals
 
