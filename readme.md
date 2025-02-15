@@ -2,84 +2,56 @@
 Unifying application for efficient and C-dependent 
 program development.
 
-Cmount is a debug and builder application 
-to make the developers life easier. It provides a 
-standardized project structure, dependency management 
-and hot reload for all supported languages in the 
-development cycle through a llvm just in time compiler.
+Projects that built with Cmount profits of a modern and productive
+development cycle as well of cross-platform targets. 
+Users of software built with Cmount also profits by easy modding capabilities 
+(as long the developer want) made possible by Cmount's unification protocol.
 
-## Cross-platform
-Cmount comes with C, Python and Dart on the development 
-platforms Windows, macOS and Linux as well the target platforms
-Windows, macOS, Linux, android, iOS.
-It can cross compile to target mobile platforms.
+---
+# Goals
 
-## Hot reload
-Cmount has hot reload for C and Dart as languages. But every
-language can be added with such a feature from Cmount's side.
+### 1. Extensible Development Environment
+- Enables adding, updating, and removing **extensions** dynamically.
+- Extensions can communicate with and depend on each other.
 
-## Easy project configuration
-Because Cmount is heavily inspired by the Flutter command line tool,
-you will find a similar idea of project configuration.
+### 2. Multi-Language Interaction
+- **C**, **Dart**, and **Python** should support **Hot Reload** during development.
+- A common **API** and **event system** for communication between languages.
 
-`spec.yaml`
-```yaml
-name: project_name
-version: dev-.1 # Strings are allowed.
-description: sample description
-authors: ...
-license: license.md # Files always relative to project root.
+### 3. Common Protocol
+- Centralized protocol for **build process and runtime management**.
+- Standardized interface to facilitate interaction between all extensions (including **modding API**).
 
-c:
-  type: shared # Available: shared, executable
-  sources: src/ # It will be scanned for .c files.
-  standard: C23 # ISO standards.
-  
-dart: 
-  type: native # Available: native, package
-  sources: src/
-  version: 3.4.1
-  pub: # Dart pub package manager dependencies.
-    yaml: ^2.3
-```
-But you maybe notice, a project has its limitations about
-multiple executables etc. For specific use cases you definitely
-should consider to build an extension.
+### 4. Consistent Build and Release Phases
+- **Development Phase**: Focused on **Hot Reload**, JIT, and fast iteration.
+- **Release Phase**: Focused on **AOT compilation**, performance, and stability.
+- **Runtime**: Allows installing and managing extensions dynamically.
 
-``extspec.json``
-```json
-{
-  "name": "extension_name",
-  "description": "sample description",
-  "depend": [
-    "Python"
-  ],
-  "link": "import",
-  "bundle": {
-    "platforms": {
-      "all": [
-        "config.yaml"
-      ],
-      "windows": [
-        "sample.win.dll"
-      ]
-    }
-  }
-}
-```
+### 5. Clear Project and Binary Structure
+- **Project organization** with defined folder structures.
+- **Standardized binary output** formats for all supported languages.
+---
+# Structure and Components
+### 1. Core
+- Implemented in **C**.
+- Provides fundamental **build logic**, **Hot Reload mechanisms**, and the **Common Protocol**.
+- Allows direct integration of C code (without requiring an extension).
 
-> 
-## Unit protocol
-Cmount comes with an API to extend it. But the special feature about it
-is, the extensions you write will not only be able to communicate with Cmount, 
-but also with applications built with Cmount.
+### 2. Extensions
+- **Dart** and **Python** are integrated as **extensions**.
+- Extensions can interact with and depend on each other (e.g., a Dart extension using a Python extension).
+- Extensions interact with Cmount through a **common interface**:
+    - **Events**: Runtime and build-time events.
+    - **API**: Access to the common protocol and other extensions.
 
-This is such a great feature because it allows applications built with 
-Cmount to seamlessly integrate modding capabilities. All extensions written 
-for Cmount are also extensions for Cmount based applications that use 
-the protocol.
+### 3. Common Protocol
+- Centralized communication and coordination system:
+    - **Build Process** (Hot Reload, JIT, AOT compilation).
+    - **Runtime** (events, extension installation).
+- Defines how extensions register their **capabilities**, **configurations**, and **dependencies**.
+- Enables a consistent **modding API**, allowing applications built with Cmount to support external extensions.
 
-You can decide if you want your app to be extended/modded or not.
+---
 
 ## Participated components
 Cmount is created for **Fireworks**, a graphic engine framework.
