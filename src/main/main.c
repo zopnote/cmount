@@ -54,6 +54,6 @@ int main(const int argc, char** argv) {
     printf("\nBUFFER: %s\n\n", exe_path_buffer);
     strcat(exe_path_buffer, "/logs");
     printf("%s", exe_path_buffer);
-    logger_cleanup_logs(buffer);
+    logger_cleanup_logs(exe_path_buffer);
     return EXIT_SUCCESS;
 }

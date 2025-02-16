@@ -1,9 +1,38 @@
 #include <core.h>
+#include <stdbool.h>
+#include <string.h>
+
+bool os_copy_file_to_new_file(
+    FILE* file,
+    const char* new_file_path
+) {
+    FILE* target_file = fopen(
+        new_file_path, "w"
+    );
+
+    if (!target_file) {
+        return false;
+    }
+
+    const int result = fseek(
+        file, 0, SEEK_SET
+    );
+
+    if (result != 0) {
+        return false;
+    }
+
+    char read;
+    while ((read = fgetc(file)) != EOF) {
+        fputc(read, target_file);
+    }
+    fclose(target_file);
+    return true;
+}
 
 #ifdef _WIN64 || _WIN32
 #include <direct.h>
 #include <io.h>
-#include <stdbool.h>
 #include <windows.h>
 
 bool os_get_current_working_directory(
@@ -21,31 +50,33 @@ bool os_get_executable_directory(
     const size_t buffer_size
 ) {
     char directory_name[MAX_PATH];
-    const DWORD len = GetModuleFileName(
+    const auto strlen = GetModuleFileName(
         NULL,
         directory_name,
         MAX_PATH
     );
-    if (len > 0) {
 
-        char* last_slash = strrchr(
-            directory_name, '\\');
-
-        if (last_slash) {
-            *last_slash = '\0';
-        }
-
-        if (buffer_size >= len) {
-            strcat(
-                buffer,
-                directory_name
-            );
-            return true;
-        }
+    if (strlen <= 0) {
         return false;
     }
-    buffer = NULL;
-    return false;
+
+    for (size_t i = strlen; i > 0; i--) {
+        if (
+            directory_name[i] == '\\' ||
+            directory_name[i] == '/'
+        ) {
+            directory_name[i] = '\0';
+            break;
+        }
+    }
+
+    strcpy_s(
+        buffer,
+        buffer_size,
+        directory_name
+    );
+
+    return true;
 }
 
 bool os_can_access_file(const char* file_path) {
@@ -56,10 +87,6 @@ bool os_make_directory(const char* directory_path) {
     return _mkdir(directory_path) == 0;
 }
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <windows.h>
 
 int os_get_directory_files(
     char*** file_paths_buffer,

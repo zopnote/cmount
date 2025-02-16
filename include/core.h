@@ -6,6 +6,10 @@
 #include <stdio.h>
 #include <time.h>
 
+bool os_copy_file_to_new_file(
+    FILE* file,
+    const char* new_file_path
+);
 
 /**
  * @brief Gets the directory the program runs at.
@@ -239,9 +243,11 @@ inline void logger_add_file_target(
  * Let the file write down messages to a specific file pointer.
  *
  * @param logs_directory_path The directory in which logs will be cleaned up.
+ * @param max_allowed_log_files How many log files are allowed to exist before the function will clean them up. Default should be around 25.
  */
 void logger_cleanup_logs(
-    const char* logs_directory_path
+    const char* logs_directory_path,
+    int max_allowed_log_files
 );
 
 
