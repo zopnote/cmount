@@ -2,12 +2,12 @@
 Unifying application for efficient and C-dependent 
 program development.
 
-Projects that built with Cmount profits of a modern and productive
+Projects that built with CMount profits of a modern and productive
 development cycle with hot reload for C & Dart, easy extensibility, performance as well as cross-platform targets. 
-Users of software built with Cmount also profits by easy modding capabilities 
-(as long the developer want) made possible by Cmount's unification protocol.
+Users of software built with CMount also profits by easy modding capabilities 
+(as long the developer want) made possible by CMount's unification protocol.
 
-And no worries, Cmount is well documented.
+And no worries, CMount is well documented.
 
 ---
 # Goals
@@ -42,7 +42,7 @@ And no worries, Cmount is well documented.
 ### 2. Extensions
 - **Dart** and **Python** are integrated as **extensions**.
 - Extensions can interact with and depend on each other (e.g., a Dart extension using a Python extension).
-- Extensions interact with Cmount through a **common interface**:
+- Extensions interact with CMount through a **common interface**:
     - **Events**: Runtime and build-time events.
     - **API**: Access to the common protocol and other extensions.
 
@@ -51,11 +51,11 @@ And no worries, Cmount is well documented.
     - **Build Process** (Hot Reload, JIT, AOT compilation).
     - **Runtime** (events, extension installation).
 - Defines how extensions register their **capabilities**, **configurations**, and **dependencies**.
-- Enables a consistent **modding API**, allowing applications built with Cmount to support external extensions.
+- Enables a consistent **modding API**, allowing applications built with CMount to support external extensions.
 
 ---
 
 ## Participated components
-Cmount is created for **Fireworks**, a graphic engine framework.
-As result, Cmount is actually intended to be extended and is participated
+CMount is created for **Fireworks**, a graphic engine framework.
+As result, CMount is actually intended to be extended and is participated
 in its components as shared libraries.
