@@ -4,7 +4,7 @@
 
 int main(const int argc, char** argv) {
     logger_t* main_logger = logger_create(
-        "cmount", true, true, logger_write
+        "cm", true, true, logger_write
     );
     logger_t* parser_logger = logger_create(
         "parser", true, true, logger_write
@@ -54,6 +54,8 @@ int main(const int argc, char** argv) {
     printf("\nBUFFER: %s\n\n", exe_path_buffer);
     strcat(exe_path_buffer, "/logs");
     printf("%s", exe_path_buffer);
-    logger_cleanup_logs(exe_path_buffer);
+    logger_cleanup_logs(exe_path_buffer, 25);
+    logger_dispose(parser_logger);
+    logger_dispose(main_logger);
     return EXIT_SUCCESS;
 }

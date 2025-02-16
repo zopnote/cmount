@@ -215,6 +215,7 @@ void logger_write(
     time(&raw_time);
     struct tm* time_info = localtime(&raw_time);
 
+
     sprintf(
         meta_of_message_buffer,
         "%d:%d:%d, %d-%d-%d, %s",
@@ -328,41 +329,74 @@ void logger_cleanup_logs(
         times[i].key = strdup(file_paths_buffer[i]);
         free(file_paths_buffer[i]);
 
-        const size_t time_buffer_size = 12;
-        const size_t date_buffer_size = 18;
+        const size_t time_buffer_size = 52;
+        const size_t date_buffer_size = 52;
         char time_buffer[time_buffer_size];
         char date_buffer[date_buffer_size];
 
-        size_t last_mark_index = 0;
+        size_t date_buffer_start = 0;
         for (size_t k = 0; k < strlen(times[i].key); k++) {
-            if (times[i].key[k] == '_' && !last_mark_index) {
-
+            if (times[i].key[k] == '_') {
                 strncpy_s(
                     time_buffer,
                     time_buffer_size,
                     times[i].key, k
                 );
-                time_buffer[k + 1] = '\0';
-                last_mark_index = k + 1;
-                continue;
+                time_buffer[k] = '\0';
+                date_buffer_start = k + 2;
+                break;
             }
 
         }
 
-        for (size_t k = last_mark_index; k < strlen(times[i].key); k++) {
+        for (size_t k = 0; k < (strlen(times[i].key) - date_buffer_start); k++) {
             if (times[i].key[k] == '_') {
                 strncpy_s(
                     date_buffer,
                     date_buffer_size,
-                    times[i].key + last_mark_index,
+                    times[i].key + date_buffer_start,
                     k
                 );
-                date_buffer[k + 1] = '\0';
+                date_buffer[k] = '\0';
+                break;
             }
         }
+        printf(
+            "\ntime_buffer: %s \ndate_buffer: %s\n",
+            time_buffer, date_buffer);
+
         size_t time_size = 0;
         size_t date_size = 0;
 
     }
     free(file_paths_buffer);
+}
+
+void logger_dispose(
+    logger_t* logger
+) {
+    logger->should_print_in_console = NULL;
+    logger->logger_log_function = NULL;
+    logger->verbose = NULL;
+    free(logger->time);
+    if (logger->file) {
+        const size_t message_buffer_size = 256;
+        char message_buffer[message_buffer_size];
+        message_buffer[0] = '\0';
+        sprintf(
+            message_buffer,
+            "\n\nLOGGER DISPOSAL OF %s => SUCCESSFUL.\n\n",
+            logger->name
+        );
+        fwrite(
+            message_buffer,
+            sizeof(char),
+            message_buffer_size,
+            logger->file
+        );
+        fclose(logger->file);
+        logger->file = NULL;
+    }
+    logger->name = NULL;
+    logger = NULL;
 }
