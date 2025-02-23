@@ -13,7 +13,6 @@ int main(const int argc, char** argv) {
     char buffer[256];
 
     os_get_executable_directory(buffer, 256);
-    printf("\n1 BUFFER: %s\n\n", buffer);
 
     logger_create_file_target(main_logger, false, buffer);
     logger_add_file_target(parser_logger, main_logger->file);
@@ -46,15 +45,8 @@ int main(const int argc, char** argv) {
     );
 
 
-    char exe_path_buffer[256];
-    printf(
-        "\n\nGot executable path: %d",
-        os_get_executable_directory(exe_path_buffer, 256)
-    );
-    printf("\nBUFFER: %s\n\n", exe_path_buffer);
-    strcat(exe_path_buffer, "/logs");
-    printf("%s", exe_path_buffer);
-    logger_cleanup_logs(exe_path_buffer, 25);
+    strcat(buffer, "/logs");
+    logger_cleanup_logs(buffer, 25);
     logger_dispose(parser_logger);
     logger_dispose(main_logger);
     return EXIT_SUCCESS;

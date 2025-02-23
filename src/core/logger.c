@@ -88,17 +88,19 @@ static bool move_and_name_log_file(
     bracket_buffer[bracket_content_size] = '\0';
 
 
-    sprintf(bracket_buffer, strlwr(bracket_buffer));
+    sprintf(bracket_buffer, "%s", strlwr(bracket_buffer));
     strcat(bracket_buffer, ".log");
 
     for (size_t i = 0; i < bracket_content_size; i++) {
         if (bracket_buffer[i] == ':') {
             bracket_buffer[i] = '-';
+            continue;
         }
-        if (bracket_buffer[i] == ',') {
-            bracket_buffer[i] = '_';
-        }
-        if (bracket_buffer[i] == ' ') {
+
+        if (
+            bracket_buffer[i] == ',' ||
+            bracket_buffer[i] == ' '
+        ) {
             bracket_buffer[i] = '_';
         }
     }
@@ -128,8 +130,8 @@ static bool move_and_name_log_file(
     );
     fclose(latest_log_file);
     const int remove_file_result = remove(
-        latest_log_file
-        );
+        path_of_file
+    );
     return !remove_file_result && copy_file_result;
 }
 
@@ -236,37 +238,46 @@ void logger_write(
 
     switch (significance) {
         case error:
-            strcat(significance_of_message_buffer, "Error");
+            strcat(
+                significance_of_message_buffer, "Error");
             message_color = get_color(red).ansi_color_code;
             should_print_in_console = true;
+
             break;
         case warning:
-            strcat(significance_of_message_buffer, "Warning");
+            strcat(
+                significance_of_message_buffer, "Warning");
             message_color = get_color(yellow).ansi_color_code;
-            should_print_in_console = logger->should_print_in_console;
+            should_print_in_console =
+                logger->should_print_in_console;
+
             break;
         case status:
-            strcat(significance_of_message_buffer, "Status");
+            strcat(
+                significance_of_message_buffer, "Status");
             message_color = 97;
-            should_print_in_console = logger->should_print_in_console;
+            should_print_in_console =
+                logger->should_print_in_console;
+
             break;
         case info:
-            strcat(significance_of_message_buffer, "Info");
+            strcat(
+                significance_of_message_buffer, "Info");
             should_print_in_console =
-                logger->should_print_in_console && logger->verbose;
+                logger->should_print_in_console &&
+                    logger->verbose;
+
             break;
         default: break;
     }
 
 
-
-    char constructed_message_buffer[
-        strlen(message_buffer) * sizeof(char) +
-        strlen(meta_of_message_buffer) * sizeof(char) +
-        56 * sizeof(char)
-    ];
-
     if (logger->file) {
+        char constructed_message_buffer[
+            strlen(message_buffer) * sizeof(char) +
+            strlen(meta_of_message_buffer) * sizeof(char) +
+            56 * sizeof(char)
+        ];
 
         sprintf(
             constructed_message_buffer,
@@ -282,25 +293,13 @@ void logger_write(
             strlen(constructed_message_buffer),
             logger->file
         );
-
-        memset(
-            constructed_message_buffer,
-            0, sizeof(constructed_message_buffer)
-        );
     }
 
     if (should_print_in_console) {
-        sprintf(
-            constructed_message_buffer,
-            "\x1B[%dm%s\x1B[%dm(%s): %s\n",
-            message_color,
-            significance_of_message_buffer,
-            none, meta_of_message_buffer,
+        printf(
+            "\n%s",
             message_buffer
         );
-
-        fprintf(stdout, constructed_message_buffer);
-        fflush(stdout);
     }
 }
 
@@ -325,78 +324,26 @@ void logger_cleanup_logs(
     ];
 
     for (int i = 0; i < found_files_count; i++) {
-
-        times[i].key = strdup(file_paths_buffer[i]);
-        free(file_paths_buffer[i]);
-
-        const size_t time_buffer_size = 52;
-        const size_t date_buffer_size = 52;
-        char time_buffer[time_buffer_size];
-        char date_buffer[date_buffer_size];
-
-        size_t date_buffer_start = 0;
-        for (size_t k = 0; k < strlen(times[i].key); k++) {
-            if (times[i].key[k] == '_') {
-                strncpy_s(
-                    time_buffer,
-                    time_buffer_size,
-                    times[i].key, k
-                );
-                time_buffer[k] = '\0';
-                date_buffer_start = k + 2;
-                break;
-            }
-
-        }
-
-        for (size_t k = 0; k < (strlen(times[i].key) - date_buffer_start); k++) {
-            if (times[i].key[k] == '_') {
-                strncpy_s(
-                    date_buffer,
-                    date_buffer_size,
-                    times[i].key + date_buffer_start,
-                    k
-                );
-                date_buffer[k] = '\0';
-                break;
-            }
-        }
-        printf(
-            "\ntime_buffer: %s \ndate_buffer: %s\n",
-            time_buffer, date_buffer);
-
-        size_t time_size = 0;
-        size_t date_size = 0;
-
+        free(&file_paths_buffer[found_files_count]);
     }
-    free(file_paths_buffer);
 }
 
-void logger_dispose(
-    logger_t* logger
-) {
-    logger->should_print_in_console = NULL;
-    logger->logger_log_function = NULL;
-    logger->verbose = NULL;
-    free(logger->time);
+void logger_dispose(logger_t* logger) {
+    if (!logger) return;
+
+    if (!logger->time) {
+        free(logger->time);
+    }
+
     if (logger->file) {
-        const size_t message_buffer_size = 256;
-        char message_buffer[message_buffer_size];
-        message_buffer[0] = '\0';
-        sprintf(
-            message_buffer,
-            "\n\nLOGGER DISPOSAL OF %s => SUCCESSFUL.\n\n",
+        logger->logger_log_function(
+            logger,
+            info,
+            "Disposal of logger %s.",
             logger->name
         );
-        fwrite(
-            message_buffer,
-            sizeof(char),
-            message_buffer_size,
-            logger->file
-        );
         fclose(logger->file);
-        logger->file = NULL;
     }
-    logger->name = NULL;
+
     logger = NULL;
 }

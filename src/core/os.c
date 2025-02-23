@@ -93,7 +93,7 @@ int os_get_directory_files(
     const char* directory_path
 ) {
     WIN32_FIND_DATA found_file_data;
-    auto found_file = INVALID_HANDLE_VALUE;
+    HANDLE found_file = INVALID_HANDLE_VALUE;
     int file_count = 0;
     char searchPath[MAX_PATH];
 
@@ -106,17 +106,32 @@ int os_get_directory_files(
 
     char** temp_buffer = NULL;
 
-    do {
-        if (found_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+    while (FindNextFile(found_file, &found_file_data)) {
+
+        if (!strcmp(found_file_data.cFileName, ".")) {
             continue;
         }
 
-        char** new_buffer = realloc(temp_buffer, sizeof(char*) * (file_count + 1));
+        if (!strcmp(found_file_data.cFileName, "..")) {
+            continue;
+        }
+
+        if (found_file_data.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY) {
+            continue;
+        }
+
+        char** new_buffer = realloc(
+            temp_buffer,
+            sizeof(char*) *
+            (file_count + 1)
+        );
+
         if (!new_buffer) {
             free(temp_buffer);
             FindClose(found_file);
             return 0;
         }
+
         temp_buffer = new_buffer;
 
         temp_buffer[file_count] = strdup(found_file_data.cFileName);
@@ -128,7 +143,7 @@ int os_get_directory_files(
 
         file_count++;
 
-    } while (FindNextFile(found_file, &found_file_data) != 0);
+    }
 
     FindClose(found_file);
     *file_paths_buffer = temp_buffer;

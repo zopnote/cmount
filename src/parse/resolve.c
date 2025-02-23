@@ -202,7 +202,7 @@ static void scan_recursive(
         if (token.type == YAML_KEY_TOKEN) {
             yaml_parser_scan(parser, &next);
             if (lastKey) free(lastKey);
-            lastKey = strdup(next.data.scalar.value);
+            lastKey = strdup((char*)next.data.scalar.value);
             continue;
         }
 
@@ -225,7 +225,7 @@ static void scan_recursive(
                 state.entries,
                 state.size,
                 lastKey,
-                next.data.scalar.value
+                (char*)next.data.scalar.value
             );
             continue;
         }
@@ -237,7 +237,7 @@ static void scan_recursive(
                 continue;
             }
 
-            add_to_or_create_list(&state, lastKey, next.data.scalar.value);
+            add_to_or_create_list(&state, lastKey, (char*)next.data.scalar.value);
         }
 
     }
@@ -259,7 +259,7 @@ void parse_resolve_yaml_string(
     }
 
     yaml_parser_set_input_string(
-        &parser, string, sizeof(char) * strlen(string));
+        &parser, (unsigned char*)string, sizeof(char) * strlen(string));
 
     yaml_token_t event;
     while (event.type != YAML_BLOCK_MAPPING_START_TOKEN) {
