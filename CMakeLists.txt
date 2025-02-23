@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_C_STANDARD 23)
 
+if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-microsoft -Wno-deprecated-declarations")
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
@@ -24,14 +28,50 @@ if(EXISTS ${SRC_INCLUDE_DIRECTORY})
     install(DIRECTORY ${SRC_INCLUDE_DIRECTORY}/ DESTINATION include FILES_MATCHING PATTERN "*.h")
 endif()
 
-# Variables which defines the structure of the output, installed, binaries.
-include(${CMAKE_SOURCE_DIR}/structure.cmake)
 
-# Configurations of third party projects
-include(${CMAKE_SOURCE_DIR}/vendor.cmake)
+# Variables which defines the structure of the output, installed, binaries.
+set(MAIN_EXECUTABLE_NAME ${PROJECT_NAME})
+
+
+
+# The binary and internal paths are hard coded in the program
+set(OUT_BINARY_DIRECTORY bin)
+set(OUT_INTERNAL_DIRECTORY ${OUT_BINARY_DIRECTORY}/internal)
+
+
+
+set(OUT_CACHE_DIRECTORY ${OUT_BINARY_DIRECTORY}/cache)
+
+set(OUT_DOCUMENTATION_DIRECTORY docs)
+
+set(OUT_LIBRARY_DIRECTORY lib)
+
+set(OUT_INCLUDE_DIRECTORY include)
+
+set(OUT_RUNTIME_DIRECTORY runtime)
+set(OUT_UNIT_RUNTIME_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/unit)
+set(OUT_CONFIG_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/config)
+set(OUT_SCRIPTS_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/scripts)
+set(OUT_RESOURCE_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/resources)
+set(OUT_TEMPLATES_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/templates)
+
+
+set(PROJECT_STRUCTURE_PATHS ${CMAKE_SOURCE_DIR}/resources/internal/paths.yaml.template)
+
+set(PROJECT_STRUCTURE_PATHS_OUTPUT ${CMAKE_BINARY_DIR}/paths.yaml)
+
+# Configurations of third party projects/deps
+include(${CMAKE_SOURCE_DIR}/vendor/llvm.cmake)
+include(${CMAKE_SOURCE_DIR}/vendor/libcurl.cmake)
+include(${CMAKE_SOURCE_DIR}/vendor/yaml.cmake)
+include(${CMAKE_SOURCE_DIR}/vendor/dmon.cmake)
+
 
 # Actual source configuration of CMount
-include(${CMAKE_SOURCE_DIR}/components.cmake)
+set(SRC_COMPONENT_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
+include("${SRC_COMPONENT_DIRECTORY}/core.cmake")
+include("${SRC_COMPONENT_DIRECTORY}/parse.cmake")
+include("${SRC_COMPONENT_DIRECTORY}/main.cmake")
 
 # Runtime resources that should be installed
 add_subdirectory(runtime)
