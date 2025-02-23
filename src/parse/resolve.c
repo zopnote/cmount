@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <parse.h>
 #include <yaml.h>
 

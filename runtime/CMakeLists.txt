@@ -31,7 +31,7 @@ foreach(INDEX RANGE 0 0)
 
             if(${ENTITY} MATCHES ".*\\.in$")
                 configure_file(${ENTITY} ${CMAKE_BINARY_DIR}/${BIN_OUT_DIRECTORY}${BASE_NAME} @ONLY)
-                install(FILES ${CMAKE_BINARY_DIR}/${BASE_NAME} DESTINATION ${OUT_DIRECTORY})
+                install(FILES ${CMAKE_BINARY_DIR}/${BIN_OUT_DIRECTORY}${BASE_NAME} DESTINATION ${OUT_DIRECTORY})
             endif()
 
         endif()

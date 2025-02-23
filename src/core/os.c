@@ -30,7 +30,7 @@ bool os_copy_file_to_new_file(
     return true;
 }
 
-#ifdef _WIN64 || _WIN32
+#ifdef _WIN32
 #include <direct.h>
 #include <io.h>
 #include <windows.h>
@@ -153,24 +153,25 @@ int os_get_directory_files(
 
 #else
 
-#include <unistd.h>
-#include <limits.h>
+#include <dirent.h>
 #include <libgen.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <sys/stat.h>
-#include <stdbool.h>
+#include <sys/types.h>
 
-void os_get_current_working_directory(
+bool os_get_current_working_directory(
     char* buffer,
     const size_t buffer_size
 ) {
-    getcwd(buffer, buffer_size);
+     return getcwd(buffer, buffer_size) == 0;
 }
 
-void os_get_executable_directory(
+bool os_get_executable_directory(
     char* buffer,
     const size_t buffer_size
 ) {
-    ssize_t len = readlink(
+    const ssize_t len = readlink(
         "/proc/self/exe",
         buffer,
         buffer_size - 1
@@ -178,9 +179,11 @@ void os_get_executable_directory(
 
     if (len != -1) {
         buffer[len] = '\0';
-        char* dir = dirname(buffer);
+        const char* dir = dirname(buffer);
         strncpy(buffer, dir, buffer_size);
+        return true;
     }
+    return false;
 }
 
 bool os_can_access_file(const char* file_path) {
@@ -195,13 +198,12 @@ int os_get_directory_files(
     char*** file_paths_buffer,
     const char* directory_path
 ) {
-    DIR* directory;
     struct dirent* directory_entry;
     int file_count = 0;
     struct stat file_stat;
     char** temp_buffer = NULL;
 
-    directory = opendir(directory_path);
+    DIR* directory = opendir(directory_path);
     if (!directory) {
         return 0;
     }

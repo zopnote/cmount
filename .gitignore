@@ -13,3 +13,5 @@
 /cmake-build-win-release/
 /cmake-build-wsl-debug/
 /cmake-build-wsl-release/
+/cmake-build-arm-wsl-release/
+/out/

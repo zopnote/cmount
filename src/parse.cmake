@@ -11,12 +11,15 @@ target_link_libraries(parse
 )
 
 install(TARGETS parse
-        RUNTIME DESTINATION bin
-        ARCHIVE DESTINATION lib
+        COMPONENT DESTINATION ${OUT_BINARY_DIRECTORY}
+        RUNTIME DESTINATION ${OUT_BINARY_DIRECTORY}
+        ARCHIVE DESTINATION ${OUT_LIBRARY_DIRECTORY}
 )
 
-install(
-        FILES $<TARGET_PDB_FILE:parse>
-        DESTINATION bin
-        CONFIGURATIONS Debug RelWithDebInfo
-)
+if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+    install(
+            FILES $<TARGET_PDB_FILE:parse>
+            DESTINATION bin
+            CONFIGURATIONS Debug RelWithDebInfo
+    )
+endif ()

@@ -1,4 +1,5 @@
 #include <core.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -29,6 +30,21 @@ logger_t* logger_create(
     logger->time = time_info;
 
     return logger;
+}
+void logger_add_file_target(
+    logger_t* logger,
+    FILE* file
+) {
+    logger->file = file;
+}
+
+static char* strlwr(char* s)
+{
+    for (char* tmp = s;*tmp;++tmp) {
+        *tmp = tolower((unsigned char) *tmp);
+    }
+
+    return s;
 }
 
 static bool move_and_name_log_file(
@@ -86,7 +102,6 @@ static bool move_and_name_log_file(
         file
     );
     bracket_buffer[bracket_content_size] = '\0';
-
 
     sprintf(bracket_buffer, "%s", strlwr(bracket_buffer));
     strcat(bracket_buffer, ".log");
@@ -196,8 +211,8 @@ void logger_write(
     const char* format,
     ...
 ) {
-    char* args = NULL;
-    va_start(args);
+    va_list args;
+    va_start(args, format);
 
     char message_buffer[
         strlen(format) * sizeof(char) + 360
@@ -234,20 +249,17 @@ void logger_write(
     char significance_of_message_buffer[8];
     significance_of_message_buffer[0] = '\0';
     bool should_print_in_console = false;
-    int message_color = 0;
 
     switch (significance) {
         case error:
             strcat(
                 significance_of_message_buffer, "Error");
-            message_color = get_color(red).ansi_color_code;
             should_print_in_console = true;
 
             break;
         case warning:
             strcat(
                 significance_of_message_buffer, "Warning");
-            message_color = get_color(yellow).ansi_color_code;
             should_print_in_console =
                 logger->should_print_in_console;
 
@@ -255,7 +267,6 @@ void logger_write(
         case status:
             strcat(
                 significance_of_message_buffer, "Status");
-            message_color = 97;
             should_print_in_console =
                 logger->should_print_in_console;
 
@@ -324,7 +335,7 @@ void logger_cleanup_logs(
     ];
 
     for (int i = 0; i < found_files_count; i++) {
-        free(&file_paths_buffer[found_files_count]);
+        free(file_paths_buffer[found_files_count]);
     }
 }
 

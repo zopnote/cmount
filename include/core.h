@@ -81,59 +81,6 @@ typedef enum {
 } logger_significance_t;
 
 
-/**
- * @brief Color for a message that will be used if printing in the command line.
- *
- * The id is regardless, if you use an own color from the ansi color table.
- * The ansi_color_code is required.
- */
-typedef struct {
-    const int id;
-    const int ansi_color_code;
-} logger_color_t;
-
-
-/**
- * Enum values of colors that maps to the actual ansi color codes via get_color().
- */
-enum logger_colors_e {
-    none,
-    red,
-    red_accent,
-    green,
-    green_accent,
-    blue,
-    blue_accent,
-    light_blue,
-    purple,
-    pink,
-    yellow
-};
-
-
-/**
- * @brief Returns the actual logger_color_t values which are predefined for the logger_colors_e enum.
- */
-inline logger_color_t get_color(
-    const enum logger_colors_e color
-) {
-    static logger_color_t logger_colors[] = {
-        none, 0,
-        red, 31,
-        red_accent, 91,
-        green, 32,
-        green_accent, 92,
-        blue, 34,
-        blue_accent, 94,
-        light_blue, 36,
-        purple, 35,
-        pink, 95,
-        yellow, 33
-    };
-    return logger_colors[color];
-}
-
-
 typedef struct logger_s logger_t;
 
 
@@ -167,7 +114,6 @@ struct logger_s {
  * @brief Structure to save the values for sequences of messages printed in to a logger.
  */
 struct message {
-    const logger_color_t color;
     const char* format;
     char* va_list_args;
 };
@@ -226,12 +172,10 @@ void logger_create_file_target(
  * @param logger The logger which will get a file target.
  * @param file The file that the logger will write to.
  */
-inline void logger_add_file_target(
+void logger_add_file_target(
     logger_t* logger,
     FILE* file
-) {
-    logger->file = file;
-}
+);
 
 
 /**
