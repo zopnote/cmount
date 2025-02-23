@@ -2,6 +2,12 @@ file(GLOB_RECURSE SRC_FILES_MAIN_EXECUTABLE ${SRC_COMPONENT_DIRECTORY}/main/*.c)
 
 add_executable(${PROJECT_NAME} ${SRC_FILES_MAIN_EXECUTABLE})
 
-target_link_libraries(${PROJECT_NAME} parse core YAML)
+target_link_libraries(${PROJECT_NAME} parse core)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${OUT_BINARY_DIRECTORY})
+
+install(
+        FILES $<TARGET_PDB_FILE:${PROJECT_NAME}>
+        DESTINATION bin
+        CONFIGURATIONS Debug RelWithDebInfo
+)

@@ -1,4 +1,3 @@
-/.out/
 /.cache/
 /.fleet/
 /.idea/
@@ -10,3 +9,7 @@
 /run_install_build.py
 
 /Dockerfile
+/cmake-build-win-debug/
+/cmake-build-win-release/
+/cmake-build-wsl-debug/
+/cmake-build-wsl-release/

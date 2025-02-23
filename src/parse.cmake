@@ -7,10 +7,16 @@ target_include_directories(parse PUBLIC ${SRC_INCLUDE_DIRECTORY})
 
 target_link_libraries(parse
         core
-        YAML
+        yaml
 )
 
 install(TARGETS parse
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib
+)
+
+install(
+        FILES $<TARGET_PDB_FILE:parse>
+        DESTINATION bin
+        CONFIGURATIONS Debug RelWithDebInfo
 )

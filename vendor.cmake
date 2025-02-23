@@ -1,4 +1,5 @@
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-microsoft -Wno-deprecated-declarations")
     set(PLATFORM_DYLIB_ENDING .dll)
     set(PLATFORM_STLIB_ENDING .lib)
     set(PLATFORM_LIB_PREFIX "")
@@ -17,7 +18,7 @@ else()
 endif()
 
 
-include(${CMAKE_SOURCE_DIR}/vendor/llvm_conf.cmake)
-include(${CMAKE_SOURCE_DIR}/vendor/curl_conf.cmake)
-include(${CMAKE_SOURCE_DIR}/vendor/yaml_conf.cmake)
-include(${CMAKE_SOURCE_DIR}/vendor/dmon_conf.cmake)
+include(${CMAKE_SOURCE_DIR}/vendor/llvm.cmake)
+include(${CMAKE_SOURCE_DIR}/vendor/libcurl.cmake)
+include(${CMAKE_SOURCE_DIR}/vendor/yaml.cmake)
+include(${CMAKE_SOURCE_DIR}/vendor/dmon.cmake)
