@@ -1,0 +1,212 @@
+#include <core.h>
+#include <stdbool.h>
+#include <string.h>
+
+
+
+#ifdef _WIN32
+#include <direct.h>
+#include <io.h>
+#include <windows.h>
+
+bool get_work_dir(char* buffer, const size_t buffer_size) {
+    return _getcwd(buffer, buffer_size);
+}
+
+bool get_exe_dir(char* buffer, const size_t buffer_size) {
+    
+    char path[MAX_PATH];
+    
+    const auto str_len = GetModuleFileName(
+        NULL,
+        path,
+        MAX_PATH
+    );
+
+    if (str_len == 0) {
+        return false;
+    }
+
+    for (size_t i = str_len; i > 0; i--) {
+        if (
+            path[i] == '\\' ||
+            path[i] == '/'
+        ) {
+            path[i] = '\0';
+            break;
+        }
+    }
+    strcpy_s(buffer, buffer_size, path);
+
+    return true;
+}
+
+bool can_access(const char* path) {
+    return _access(path, 4) == 0;
+}
+
+bool mk_dir(const char* path) {
+    return _mkdir(path) == 0;
+}
+
+
+int get_dir_files(const char* dir_path, char*** buffer) {
+    
+    WIN32_FIND_DATA found_file_data;
+    auto found_file = INVALID_HANDLE_VALUE;
+    int total_count = 0;
+    
+    char search_path[MAX_PATH];
+    snprintf(search_path, MAX_PATH, "%s\\*", dir_path);
+    
+    found_file = FindFirstFile(search_path, &found_file_data);
+    if (found_file == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
+    
+    char** temp_buffer = NULL;
+    while (FindNextFile(found_file, &found_file_data)) {
+
+        if (!strcmp(found_file_data.cFileName, ".")) {
+            continue;
+        }
+
+        if (!strcmp(found_file_data.cFileName, "..")) {
+            continue;
+        }
+
+        if (found_file_data.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY) {
+            continue;
+        }
+
+        char** new_buffer = realloc(
+            temp_buffer,
+            sizeof(char*) *
+            (total_count + 1)
+        );
+
+        if (!new_buffer) {
+            free(temp_buffer);
+            FindClose(found_file);
+            return 0;
+        }
+
+        temp_buffer = new_buffer;
+        temp_buffer[total_count] = strdup(
+            found_file_data.cFileName
+        );
+        
+        if (temp_buffer[total_count] != 0) {
+            free(temp_buffer);
+            FindClose(found_file);
+            return 0;
+        }
+
+        total_count++;
+    }
+
+    FindClose(found_file);
+    *buffer = temp_buffer;
+    return total_count;
+}
+
+
+#else
+
+#include <dirent.h>
+#include <libgen.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+bool get_work_dir(char* buffer, const size_t buffer_size) {
+     return getcwd(buffer, buffer_size) == 0;
+}
+
+bool get_exe_dir(char* buffer, const size_t buffer_size) {
+    const size_t path_len = readlink(
+        "/proc/self/exe",
+        buffer,
+        buffer_size - 1
+    );
+
+    if (path_len != -1) {
+        buffer[path_len] = '\0';
+        const char* dir = dirname(buffer);
+        strncpy(buffer, dir, buffer_size);
+        return true;
+    }
+    return false;
+}
+
+bool can_access_file(const char* path) {
+    return access(path, R_OK) == 0;
+}
+
+bool mk_dir(const char* path) {
+    return mkdir(path, 0755) == 0;
+}
+
+int get_dir_files(const char* dir_path, char*** buffer) {
+
+    struct dirent* dir_entity;
+    int total_entities = 0;
+    struct stat file_attributes;
+    char** temp_buffer = NULL;
+
+    DIR* dir = opendir(dir_path);
+    if (!dir) {
+        return 0;
+    }
+
+    while ((dir_entity = readdir(dir)) != NULL) {
+        char full_path[1024];
+        snprintf(
+            full_path,
+            sizeof(full_path),
+            "%s/%s",
+            dir_path,
+            dir_entity->d_name
+        );
+        if (
+            stat(full_path, &file_attributes) == 0 &&
+            S_ISREG(file_attributes.st_mode)
+        ) {
+            total_entities++;
+        }
+    }
+
+    temp_buffer = (char**)malloc(total_entities * sizeof(char*));
+    if (!temp_buffer) {
+        closedir(dir);
+        return 0;
+    }
+
+    rewinddir(dir);
+    int index = 0;
+    while ((dir_entity = readdir(dir)) != NULL) {
+        char full_path[1024];
+        snprintf(
+            full_path,
+            sizeof(full_path),
+            "%s/%s",
+            dir_path,
+            dir_entity->d_name
+        );
+
+        if (
+            stat(full_path, &file_attributes) == 0 &&
+            S_ISREG(file_attributes.st_mode)
+        ) {
+            temp_buffer[index] = strdup(full_path);
+            index++;
+        }
+    }
+
+    closedir(dir);
+    *buffer = temp_buffer;
+    return total_entities;
+}
+
+#endif

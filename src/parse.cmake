@@ -1,5 +1,8 @@
 
-file(GLOB_RECURSE PARSE_SOURCE_FILES ${SRC_COMPONENT_DIRECTORY}/parse/*.c)
+set(PARSE_SOURCE_FILES
+        ${SRC_COMPONENT_DIRECTORY}/parse/emit.c
+        ${SRC_COMPONENT_DIRECTORY}/parse/resolve.c
+)
 
 add_library(parse SHARED ${PARSE_SOURCE_FILES})
 

@@ -6,10 +6,28 @@
 #include <stdio.h>
 #include <time.h>
 
-bool os_copy_file_to_new_file(
-    FILE* file,
-    const char* new_file_path
-);
+/**
+ * @brief Lowercases a string independent of platform.
+ * @param string Input string.
+ * @return Output string.
+ */
+char* str_lwr(char* string);
+
+/**
+ * @brief Gets the parent path of a path.
+ * @param path Path of entity which parent path will be written to the buffer.
+ * @param buffer Buffer that will get the parent path.
+ * @return Returns if the process was successful.
+ */
+bool parent_path(const char* path, char* buffer);
+
+/**
+ * @brief Copies a file.
+ * @param file File content that will be copied.
+ * @param new_file Full path of the file that will be created.
+ * @return Returns if the process was successful.
+ */
+bool cpy_file(FILE* file, const char* new_file);
 
 /**
  * @brief Gets the directory the program runs at.
@@ -18,10 +36,7 @@ bool os_copy_file_to_new_file(
  * @param buffer_size Size of the buffer.
  * @return Returns if the buffer is set.
  */
-bool os_get_current_working_directory(
-    char* buffer,
-    size_t buffer_size
-);
+bool get_work_dir(char* buffer, size_t buffer_size);
 
 
 /**
@@ -31,41 +46,35 @@ bool os_get_current_working_directory(
  * @param buffer_size Size of the buffer.
  * @return Returns if the buffer is set.
  */
-bool os_get_executable_directory(
-    char* buffer,
-    size_t buffer_size
-);
+bool get_exe_dir(char* buffer, size_t buffer_size);
 
 
 /**
- * @brief Tests if a file can ba accessed.
+ * @brief Tests if a file system entity exists.
  *
- * @param file_path Path of the file that will be tested for.
- * @return Returns if the file can be accessed.
+ * @param path Path of the entity that will be tested for.
+ * @return Returns if the entity exists.
  */
-bool os_can_access_file(const char* file_path);
+bool can_access(const char* path);
 
 
 /**
  * @brief Creates a directory.
  *
- * @param directory_path Path of the directory that should be created.
+ * @param path Path of the directory that should be created.
  * @return Returns if the creation of the directory succeeded.
  */
-bool os_make_directory(const char* directory_path);
+bool mk_dir(const char* path);
 
 
 /**
  * @brief Gets the files by path in a directory.
  *
- * @param file_paths_buffer Buffer the found file paths will be saved to.
- * @param directory_path Path of the directory that will be scanned.
+ * @param buffer Buffer the found file paths will be saved to.
+ * @param dir_path Path of the directory that will be scanned.
  * @return Returns the length of the buffer array, which is the count of found files.
  */
-int os_get_directory_files(
-    char*** file_paths_buffer,
-    const char* directory_path
-);
+int get_dir_files(const char* dir_path, char*** buffer);
 
 
 /**
@@ -104,9 +113,10 @@ struct logger_s {
     const char* name;
     struct tm* time;
     FILE* file;
+    bool own_file;
     bool verbose;
-    bool should_print_in_console;
-    logger_callback_t logger_log_function;
+    bool print_out;
+    logger_callback_t log_func;
 } typedef logger_t;
 
 
@@ -115,7 +125,7 @@ struct logger_s {
  */
 struct message {
     const char* format;
-    char* va_list_args;
+    char* args;
 };
 
 
@@ -128,15 +138,15 @@ struct message {
  *
  * @param name Name of the logger that will be printed.
  * @param verbose If logger_significance_e::note messages should be printed to stdout.
- * @param should_print_in_console If anything should be printed to stdout.
- * @param logger_log_function Function that will receive all messages the logger gets.
+ * @param print_stdout If anything should be printed to stdout.
+ * @param log_func Function that will receive all messages the logger gets.
  * @return A new logger with the processed values.
  */
 logger_t* logger_create(
     const char* name,
     bool verbose,
-    bool should_print_in_console,
-    logger_callback_t logger_log_function
+    bool print_stdout,
+    logger_callback_t log_func
 );
 
 
@@ -151,13 +161,13 @@ logger_t* logger_create(
  * as well as sets the logger file field.
  *
  * @param logger The logger which will get a file target.
- * @param file_should_be_named_after_logger If the file should be named after the name field of the logger structure.
- * @param directory_path The path where the logger file and its predecessors will be placed.
+ * @param name_file If the file should be named after the name field of the logger structure.
+ * @param dir_path The path where the logger file and its predecessors will be placed.
  */
 void logger_create_file_target(
     logger_t* logger,
-    bool file_should_be_named_after_logger,
-    const char* directory_path
+    bool name_file,
+    const char* dir_path
 );
 
 
@@ -172,10 +182,7 @@ void logger_create_file_target(
  * @param logger The logger which will get a file target.
  * @param file The file that the logger will write to.
  */
-void logger_add_file_target(
-    logger_t* logger,
-    FILE* file
-);
+void logger_add_file_target(logger_t* logger, FILE* file);
 
 
 /**
@@ -186,11 +193,11 @@ void logger_add_file_target(
  *
  * Let the file write down messages to a specific file pointer.
  *
- * @param logs_directory_path The directory in which logs will be cleaned up.
+ * @param logs_dir_path The directory in which logs will be cleaned up.
  * @param max_allowed_log_files How many log files are allowed to exist before the function will clean them up. Default should be around 25.
  */
 void logger_cleanup_logs(
-    const char* logs_directory_path,
+    const char* logs_dir_path,
     int max_allowed_log_files
 );
 
@@ -246,5 +253,4 @@ void logger_write_sequence(
  *
  * @param logger The logger which fields will be freed.
  */
-void logger_dispose(
-    logger_t* logger);
+void logger_dispose(logger_t* logger);

@@ -12,32 +12,32 @@ int main(const int argc, char** argv) {
 
     char buffer[256];
 
-    os_get_executable_directory(buffer, 256);
+    get_exe_dir(buffer, 256);
 
     logger_create_file_target(main_logger, false, buffer);
     logger_add_file_target(parser_logger, main_logger->file);
 
-    main_logger->logger_log_function(
+    main_logger->log_func(
         main_logger,
         status,
         "Hello %s!",
         "world"
     );
 
-    parser_logger->logger_log_function(
+    parser_logger->log_func(
         parser_logger,
         status,
         "asd %s!",
         "asd"
     );
-    parser_logger->logger_log_function(
+    parser_logger->log_func(
         parser_logger,
         status,
         "asd %s!",
         "asd"
     );
 
-    main_logger->logger_log_function(
+    main_logger->log_func(
         main_logger,
         status,
         "asdaasd %s!",
