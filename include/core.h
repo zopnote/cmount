@@ -116,7 +116,7 @@ struct logger_s {
     bool own_file;
     bool verbose;
     bool print_out;
-    logger_callback_t log_func;
+    logger_callback_t func;
 } typedef logger_t;
 
 
@@ -164,7 +164,7 @@ logger_t* logger_create(
  * @param name_file If the file should be named after the name field of the logger structure.
  * @param dir_path The path where the logger file and its predecessors will be placed.
  */
-void logger_create_file_target(
+void logger_mk_file(
     logger_t* logger,
     bool name_file,
     const char* dir_path
@@ -182,21 +182,16 @@ void logger_create_file_target(
  * @param logger The logger which will get a file target.
  * @param file The file that the logger will write to.
  */
-void logger_add_file_target(logger_t* logger, FILE* file);
+void logger_add_file(logger_t* logger, FILE* file);
 
 
 /**
- * @brief Adds a file target to the logger.
- *
- * Note, that it always depends on the
- * logger_log_function() where messages go.
- *
- * Let the file write down messages to a specific file pointer.
+ * @brief Cleans the given directory by last time logs was written.
  *
  * @param logs_dir_path The directory in which logs will be cleaned up.
  * @param max_allowed_log_files How many log files are allowed to exist before the function will clean them up. Default should be around 25.
  */
-void logger_cleanup_logs(
+void logger_clean_logs(
     const char* logs_dir_path,
     int max_allowed_log_files
 );
@@ -211,13 +206,13 @@ void logger_cleanup_logs(
  * but if it would be printed in the stdout depends on verbose of logger.
  *
  * @param logger Logger which consists of the conditions.
- * @param significance Importance of the messages that will be printed.
+ * @param sign Importance of the messages that will be printed.
  * @param format String that will be formated with the arguments, just like with printf().
  * @param ... Arguments that will be inserted in the print call.
  */
 void logger_write(
     logger_t* logger,
-    logger_significance_t significance,
+    logger_significance_t sign,
     const char* format,
     ...);
 
@@ -253,4 +248,4 @@ void logger_write_sequence(
  *
  * @param logger The logger which fields will be freed.
  */
-void logger_dispose(logger_t* logger);
+void logger_del(logger_t* logger);

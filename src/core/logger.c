@@ -16,42 +16,31 @@ static void str_of_time(const struct tm* time, char* buffer) {
 
     char hour_buffer[4];
     format_digit(time->tm_hour, hour_buffer);
-
     char min_buffer[4];
     format_digit(time->tm_min, min_buffer);
-
     char sec_buffer[4];
     format_digit(time->tm_sec, sec_buffer);
 
     char day_buffer[4];
     format_digit(time->tm_mday, day_buffer);
-
     char mon_buffer[4];
     format_digit(time->tm_mon + 1, mon_buffer);
 
     sprintf(
-        buffer,
-        "%s:%s:%s, %s-%s-%d",
-        hour_buffer,
-        min_buffer,
-        sec_buffer,
-        day_buffer,
-        mon_buffer,
-        time->tm_year + 1900
+        buffer, "%s:%s:%s, %s-%s-%d",
+        hour_buffer, min_buffer, sec_buffer,
+        day_buffer, mon_buffer, time->tm_year + 1900
     );
 }
 
-static void str_to_fstr(char* str) {
+static void replace_illegal_chars_of(char* str) {
     for (size_t i = 0; i < strlen(str); i++) {
         if (str[i] == ':') {
             str[i] = '-';
             continue;
         }
 
-        if (
-            str[i] == ',' ||
-            str[i] == ' '
-        ) {
+        if (str[i] == ',' || str[i] == ' ') {
             str[i] = '_';
         }
     }
@@ -92,7 +81,7 @@ logger_t* logger_create(
         .name = name,
         .verbose = verbose,
         .print_out = print_stdout,
-        .log_func = log_func
+        .func = log_func
     };
 
     logger->time = time_info;
@@ -100,47 +89,38 @@ logger_t* logger_create(
     return logger;
 }
 
-void logger_add_file_target(logger_t* logger, FILE* file) {
+void logger_add_file(logger_t* logger, FILE* file) {
     logger->own_file = false;
     logger->file = file;
 }
 
-static bool get_meta_of_last_message(FILE* file, char* buffer) {
-    char current_char;
-    long last_bracket_opening = -1;
-    long last_bracket_closing = -1;
-    while ((current_char = fgetc(file)) != EOF) {
+static bool meta_of_file(FILE* file, char* buffer) {
+    char cur_char;
+    long bracket_start = -1;
+    long bracket_end = -1;
+    while ((cur_char = fgetc(file)) != EOF) {
 
-        if (current_char == '(') {
-            last_bracket_opening = ftell(file);
+        if (cur_char == '(') {
+            bracket_start = ftell(file);
             continue;
         }
-
-        if (current_char == ')') {
-            last_bracket_closing = ftell(file);
+        if (cur_char == ')') {
+            bracket_end = ftell(file);
         }
     }
-    if (last_bracket_opening == -1 ||
-        last_bracket_closing == -1 ||
-        last_bracket_opening >= last_bracket_closing
+
+    if (bracket_start == -1 || bracket_end == -1 ||
+        bracket_start >= bracket_end
     ) {
         return false;
     }
 
-    fseek(
-        file,
-        last_bracket_opening,
-        SEEK_SET
-    );
+    fseek(file, bracket_start, SEEK_SET);
 
     const size_t content_size =
-        last_bracket_closing - last_bracket_opening - 1;
+        bracket_end - bracket_start - 1;
 
-    fread(
-        buffer, 1,
-        content_size,
-        file
-    );
+    fread(buffer, 1, content_size, file);
     buffer[content_size] = '\0';
 
     sprintf(buffer, "%s", str_lwr(buffer));
@@ -152,90 +132,72 @@ static bool move_log(const char* file_path) {
 
     char dir_path[strlen(file_path) + 76];
     if (!parent_path(file_path, dir_path)) {
-        printf("parent_path");
         return false;
     }
 
-    char bracket_buffer[64];
-    if (!get_meta_of_last_message(file, bracket_buffer)) {
-        printf("get_meta_of_last_message");
-        return false;
-    }
-    printf("%s", dir_path);
-    str_to_fstr(bracket_buffer);
-    strcat(bracket_buffer, ".log");
+    char meta_str[64];
+    if (!meta_of_file(file, meta_str)) return false;
+    replace_illegal_chars_of(meta_str);
+    strcat(meta_str, ".log");
+
     strcat(dir_path, "/logs");
-
     mk_dir(dir_path);
 
     strcat(dir_path, "/");
-    strcat(dir_path, bracket_buffer);
-    printf("%s", bracket_buffer);
-    if (!cpy_file(file, dir_path)) {
-        printf("cpy_file");
-        return false;
-    }
+    strcat(dir_path, meta_str);
+    if (!cpy_file(file, dir_path)) return false;
 
     fclose(file);
-    if (!remove(file_path)) {
-        printf("remove");
-        return false;
-    }
+    if (!remove(file_path)) return false;
     return true;
 }
 
 
-void logger_create_file_target(
+void logger_mk_file(
     logger_t* logger,
     const bool name_file,
     const char* dir_path
 ) {
 
-    const char* standard_log_name = "latest.log";
-    const char* name_of_logger = logger->name;
-    char file_name[
-        strlen(standard_log_name) * sizeof(char) +
-        strlen(name_of_logger) * sizeof(char) + 1
+    const char* std_name = "latest";
+    char name[
+        strlen(std_name) * sizeof(char) +
+        strlen(logger->name) * sizeof(char) + 1
     ];
-    file_name[0] = '\0';
-
+    name[0] = '\0';
+    strcat(name, std_name);
 
     if (name_file) {
 
-        char prefix[
-            strlen(name_of_logger) * sizeof(char) + 1
-        ];
-        char* name_of_logger_copy = str_lwr(
-            strdup(name_of_logger)
-        );
+        char prefix[strlen(logger->name) * sizeof(char) + 1];
+        char* lwr_name = str_lwr(strdup(logger->name));
 
-        sprintf(prefix, "%s.", str_lwr(name_of_logger_copy));
-        strcat(file_name, prefix);
+        sprintf(prefix, "%s.", str_lwr(lwr_name));
+        strcpy(name, prefix);
 
-        free(name_of_logger_copy);
+        free(lwr_name);
     }
-    strcat(file_name, "latest.log");
 
-
-    char file_path[
+    strcat(name, ".log");
+    char path[
         strlen(dir_path) * sizeof(char) +
-        strlen(file_name) * sizeof(char) + 1
+        strlen(name) * sizeof(char) + 1
     ];
-    file_path[0] = '\0';
-    sprintf(file_path, "%s/%s", dir_path, file_name);
+    path[0] = '\0';
+    sprintf(path, "%s/%s", dir_path, name);
 
-
-    if (can_access(file_path)) {
-        move_log(file_path);
+    if (can_access(path)) {
+        move_log(path);
     }
+
     logger->own_file = true;
-    logger->file = fopen(file_path, "a");
+    logger->file = fopen(path, "a");
 }
 
 
 void logger_write(
     logger_t* logger,
-    const logger_significance_t significance,
+    const logger_significance_t sign,
     const char* format,
     ...
 ) {
@@ -244,116 +206,81 @@ void logger_write(
     #else
         va_list args;
     #endif
+
     va_start(args, format);
-    char message_buffer[
-        strlen(format) * sizeof(char) + 360
-    ];
-    vsprintf(
-        message_buffer,
-        format, args
-    );
+    char msg[strlen(format) * sizeof(char) + 360];
+    vsprintf(msg, format, args);
     va_end(args);
 
-
-    size_t meta_of_message_size =
+    size_t msg_meta_size =
         strlen(logger->name) * sizeof(char) + 24;
-    char meta_of_message_buffer[meta_of_message_size];
+    char msg_meta_str[msg_meta_size];
 
     time_t raw_time;
     time(&raw_time);
-    struct tm* time_info = localtime(&raw_time);
+    struct tm* time = localtime(&raw_time);
 
 
-    str_of_time(time_info, meta_of_message_buffer);
+    str_of_time(time, msg_meta_str);
     sprintf(
-        meta_of_message_buffer,
+        msg_meta_str,
         "%s, %s",
-        meta_of_message_buffer,
+        msg_meta_str,
         logger->name
     );
-    logger->time = time_info;
+    logger->time = time;
 
-    char significance_of_message_buffer[8];
-    significance_of_message_buffer[0] = '\0';
-    bool should_print_in_console = false;
 
-    switch (significance) {
-        case error:
-            strcat(
-                significance_of_message_buffer, "Error");
-            should_print_in_console = true;
+    struct name_s {
+        int significance;
+        char* name;
+        bool print_out;
+    };
+    const struct name_s names[] = {
+        error, "Error", true,
+        warning, "Warning", logger->print_out,
+        status, "Status", logger->print_out,
+        info, "Info", logger->print_out && logger->verbose
+    };
 
-            break;
-        case warning:
-            strcat(
-                significance_of_message_buffer, "Warning");
-            should_print_in_console =
-                logger->print_out;
-
-            break;
-        case status:
-            strcat(
-                significance_of_message_buffer, "Status");
-            should_print_in_console =
-                logger->print_out;
-
-            break;
-        case info:
-            strcat(
-                significance_of_message_buffer, "Info");
-            should_print_in_console =
-                logger->print_out &&
-                    logger->verbose;
-
-            break;
-        default: break;
+    if (names[sign].print_out) {
+        printf("\n%s", msg);
     }
 
-
-    if (logger->file) {
-        char constructed_message_buffer[
-            strlen(message_buffer) * sizeof(char) +
-            strlen(meta_of_message_buffer) * sizeof(char) +
-            56 * sizeof(char)
-        ];
-
-        sprintf(
-            constructed_message_buffer,
-            "%s(%s): %s\n",
-            significance_of_message_buffer,
-            meta_of_message_buffer,
-            message_buffer
-        );
-
-        fwrite(
-            constructed_message_buffer,
-            sizeof(char),
-            strlen(constructed_message_buffer),
-            logger->file
-        );
+    if (!logger->file) {
+        return;
     }
 
-    if (should_print_in_console) {
-        printf(
-            "\n%s",
-            message_buffer
-        );
-    }
+    char final_msg[
+        strlen(msg) * sizeof(char) +
+        strlen(msg_meta_str) * sizeof(char) +
+        56 * sizeof(char)
+    ];
+
+    sprintf(
+        final_msg,
+        "%s(%s): %s\n",
+        names[sign].name,
+        msg_meta_str, msg
+    );
+
+    fwrite(
+        final_msg,
+        sizeof(char),
+        strlen(final_msg),
+        logger->file
+    );
 }
 
-struct file_name_time_map_s {
-    char* key;
-    int* value;
-};
 
-void logger_cleanup_logs(
+void logger_clean_logs(
     const char* logs_dir_path,
     const int max_allowed_log_files
 ) {
     char** files = NULL;
     const int file_count = get_dir_files(
-        &files,
-        logs_dir_path
+        logs_dir_path,
+        &files
     );
 
     if (file_count > 0 && files != NULL) {
@@ -373,15 +300,14 @@ void logger_cleanup_logs(
 
 }
 
-void logger_dispose(logger_t* logger) {
+void logger_del(logger_t* logger) {
     if (!logger) return;
 
     if (!logger->time) {
         free(logger->time);
     }
-
     if (logger->file) {
-        logger->log_func(
+        logger->func(
             logger,
             info,
             "Disposal of logger %s.",
@@ -391,6 +317,5 @@ void logger_dispose(logger_t* logger) {
             fclose(logger->file);
         }
     }
-
     logger = NULL;
 }

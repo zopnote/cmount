@@ -3,51 +3,52 @@
 #include <string.h>
 
 int main(const int argc, char** argv) {
-    logger_t* main_logger = logger_create(
-        "cm", true, true, logger_write
+    logger_t* logger = logger_create(
+        "main", true, true, logger_write
     );
-    logger_t* parser_logger = logger_create(
-        "parser", true, true, logger_write
+
+    logger_t* parse_logger = logger_create(
+        "parse", true, true, logger_write
     );
 
     char buffer[256];
 
     get_exe_dir(buffer, 256);
 
-    logger_create_file_target(main_logger, false, buffer);
-    logger_add_file_target(parser_logger, main_logger->file);
+    logger_mk_file(logger, false, buffer);
+    logger_add_file(parse_logger, logger->file);
 
-    main_logger->log_func(
-        main_logger,
+    logger->func(
+        logger,
         status,
-        "Hello %s!",
+        "bvn %s!",
         "world"
     );
 
-    parser_logger->log_func(
-        parser_logger,
-        status,
-        "asd %s!",
-        "asd"
-    );
-    parser_logger->log_func(
-        parser_logger,
+    parse_logger->func(
+        parse_logger,
         status,
         "asd %s!",
         "asd"
     );
 
-    main_logger->log_func(
-        main_logger,
+    parse_logger->func(
+        parse_logger,
+        status,
+        "asd %s!",
+        "asd"
+    );
+
+    logger->func(
+        logger,
         status,
         "asdaasd %s!",
         "asd"
     );
 
-
     strcat(buffer, "/logs");
-    logger_cleanup_logs(buffer, 25);
-    logger_dispose(parser_logger);
-    logger_dispose(main_logger);
+    logger_clean_logs(buffer, 25);
+    logger_del(parse_logger);
+    logger_del(logger);
     return EXIT_SUCCESS;
 }
