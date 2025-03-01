@@ -99,8 +99,11 @@ typedef struct logger_s logger_t;
 
 /**
  * @brief Callback for a logger function.
+ *
+ * Returns if an error occurs, either an error message
+ * from the logger or if the callback has experienced an error.
  */
-typedef void (*logger_callback_t) (
+typedef bool (*logger_callback_t) (
     logger_t* logger,
     logger_significance_t significance,
     const char* format,
@@ -120,7 +123,7 @@ struct logger_s {
     bool own_file;
     bool verbose;
     bool print_out;
-    logger_callback_t func;
+    logger_callback_t log;
 } typedef logger_t;
 
 
@@ -213,8 +216,9 @@ void logger_clean_logs(
  * @param sign Importance of the messages that will be printed.
  * @param format String that will be formated with the arguments, just like with printf().
  * @param ... Arguments that will be inserted in the print call.
+ * @return Returns result for error handling.
  */
-void logger_write(
+bool logger_write(
     logger_t* logger,
     logger_significance_t sign,
     const char* format,

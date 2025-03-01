@@ -35,7 +35,6 @@ bool parent_path(const char* path, char* buffer) {
 }
 
 bool cpy_file(FILE* file, const char* new_file) {
-    printf("\n\n%s", new_file);
     FILE* target_file = fopen(new_file, "w");
     if (!target_file) {
         return false;

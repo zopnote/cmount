@@ -62,11 +62,11 @@ struct {
  * @param entries_length Length of the entries array.
  * @param logger Defines where information while the process about the processing should go to.
  */
-void parse_resolve_yaml_string(
+bool parse_resolve_yaml_string(
     const char* string,
     parse_entry_t* entries,
     size_t entries_length,
-    const logger_t* logger
+    logger_t* logger
 );
 
 /**

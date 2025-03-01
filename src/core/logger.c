@@ -4,9 +4,9 @@
 #include <string.h>
 
 
-static void str_of_time(const struct tm* time, char* buffer) {
+static bool str_of_time(const struct tm* time, char* buffer) {
 
-    sprintf(
+    return sprintf(
         buffer, "%02d:%02d:%02d, %02d-%02d-%d",
         time->tm_hour, time->tm_min, time->tm_sec,
         time->tm_mday, time->tm_mon, time->tm_year + 1900
@@ -68,7 +68,7 @@ logger_t* logger_create(
         .name = name,
         .verbose = verbose,
         .print_out = print_stdout,
-        .func = log_func
+        .log = log_func
     };
 
     logger->time = malloc(sizeof(struct tm));
@@ -140,8 +140,7 @@ static bool move_log(const char* file_path) {
     if (!cpy_file(file, dir_path)) return false;
 
     fclose(file);
-    if (!remove(file_path)) return false;
-    return true;
+    return !remove(file_path);
 }
 
 
@@ -164,7 +163,7 @@ void logger_mk_file(
         char prefix[strlen(logger->name) * sizeof(char) + 1];
         char* lwr_name = str_lwr(strdup(logger->name));
 
-        sprintf(prefix, "%s.", str_lwr(lwr_name));
+        sprintf(prefix, "%s", str_lwr(lwr_name));
         strcpy(name, prefix);
 
         free(lwr_name);
@@ -179,7 +178,12 @@ void logger_mk_file(
     sprintf(path, "%s/%s", dir_path, name);
 
     if (can_access(path)) {
-        move_log(path);
+        const bool result = move_log(path);
+        if (!result) {
+            perror("Maybe you create the main logger twice? Cannot move latest.log file");
+            logger_mk_file(logger, true, dir_path);
+            return;
+        }
     }
 
     logger->own_file = true;
@@ -187,7 +191,7 @@ void logger_mk_file(
 }
 
 
-void logger_write(
+bool logger_write(
     logger_t* logger,
     const logger_significance_t sign,
     const char* format,
@@ -211,9 +215,14 @@ void logger_write(
     time_t raw_time;
     time(&raw_time);
     struct tm* time = localtime(&raw_time);
-
-
-    str_of_time(time, msg_meta_str);
+    if (!time) {
+        perror("Time cannot be initialized");
+        return false;
+    }
+    if (!str_of_time(time, msg_meta_str)) {
+        perror("Time cannot be converted to valid string");
+        return false;
+    }
     sprintf(
         msg_meta_str,
         "%s, %s",
@@ -224,7 +233,7 @@ void logger_write(
 
 
     struct name_s {
-        int significance;
+        int sign;
         char* name;
         bool print_out;
     };
@@ -236,11 +245,11 @@ void logger_write(
     };
 
     if (names[sign].print_out) {
-        printf("\n%s", msg);
+        printf("%s\n", msg);
     }
 
     if (!logger->file) {
-        return;
+        return sign != error;
     }
 
     char final_msg[
@@ -262,6 +271,7 @@ void logger_write(
         strlen(final_msg),
         logger->file
     );
+    return sign != error;
 }
 
 static void compute_time_stamp(
@@ -364,7 +374,7 @@ void logger_del(logger_t* logger) {
         free(logger->time);
     }
     if (logger->file) {
-        logger->func(
+        logger->log(
             logger,
             info,
             "Disposal of logger %s.",
