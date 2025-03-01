@@ -51,7 +51,6 @@ bool mk_dir(const char* path) {
 
 
 int get_dir_files(const char* dir_path, char*** buffer) {
-    
     WIN32_FIND_DATA found_file_data;
     auto found_file = INVALID_HANDLE_VALUE;
     int total_count = 0;
@@ -64,7 +63,7 @@ int get_dir_files(const char* dir_path, char*** buffer) {
         return 0;
     }
     
-    char** temp_buffer = NULL;
+    char** list = NULL;
     while (FindNextFile(found_file, &found_file_data)) {
 
         if (!strcmp(found_file_data.cFileName, ".")) {
@@ -79,34 +78,21 @@ int get_dir_files(const char* dir_path, char*** buffer) {
             continue;
         }
 
-        char** new_buffer = realloc(
-            temp_buffer,
+        list = realloc(
+            list,
             sizeof(char*) *
             (total_count + 1)
         );
 
-        if (!new_buffer) {
-            free(temp_buffer);
-            FindClose(found_file);
-            return 0;
-        }
-
-        temp_buffer = new_buffer;
-        temp_buffer[total_count] = strdup(
+        list[total_count] = strdup(
             found_file_data.cFileName
         );
-        
-        if (temp_buffer[total_count] != 0) {
-            free(temp_buffer);
-            FindClose(found_file);
-            return 0;
-        }
 
         total_count++;
     }
 
     FindClose(found_file);
-    *buffer = temp_buffer;
+    *buffer = list;
     return total_count;
 }
 
@@ -140,7 +126,7 @@ bool get_exe_dir(char* buffer, const size_t buffer_size) {
     return false;
 }
 
-bool can_access_file(const char* path) {
+bool can_access(const char* path) {
     return access(path, R_OK) == 0;
 }
 

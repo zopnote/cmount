@@ -6,6 +6,10 @@
 #include <stdio.h>
 #include <time.h>
 
+#define return_err(value, err)                              \
+    {errno(##err##);                                         \
+    return value;}
+
 /**
  * @brief Lowercases a string independent of platform.
  * @param string Input string.
@@ -188,12 +192,12 @@ void logger_add_file(logger_t* logger, FILE* file);
 /**
  * @brief Cleans the given directory by last time logs was written.
  *
- * @param logs_dir_path The directory in which logs will be cleaned up.
- * @param max_allowed_log_files How many log files are allowed to exist before the function will clean them up. Default should be around 25.
+ * @param log_dir_path The directory in which logs will be cleaned up.
+ * @param max_log_files How many log files are allowed to exist before the function will clean them up. Default should be around 25.
  */
 void logger_clean_logs(
-    const char* logs_dir_path,
-    int max_allowed_log_files
+    const char* log_dir_path,
+    int max_log_files
 );
 
 

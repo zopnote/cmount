@@ -1,35 +1,15 @@
 #include <core.h>
-#include <ctype.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 
-static void format_digit(const int a, char* buffer) {
-    sprintf(buffer, "0%d", a);
-    if (a >= 10) {
-        strncpy(buffer, buffer + 1, 2);
-    }
-    buffer[2] = '\0';
-}
 
 static void str_of_time(const struct tm* time, char* buffer) {
 
-    char hour_buffer[4];
-    format_digit(time->tm_hour, hour_buffer);
-    char min_buffer[4];
-    format_digit(time->tm_min, min_buffer);
-    char sec_buffer[4];
-    format_digit(time->tm_sec, sec_buffer);
-
-    char day_buffer[4];
-    format_digit(time->tm_mday, day_buffer);
-    char mon_buffer[4];
-    format_digit(time->tm_mon + 1, mon_buffer);
-
     sprintf(
-        buffer, "%s:%s:%s, %s-%s-%d",
-        hour_buffer, min_buffer, sec_buffer,
-        day_buffer, mon_buffer, time->tm_year + 1900
+        buffer, "%02d:%02d:%02d, %02d-%02d-%d",
+        time->tm_hour, time->tm_min, time->tm_sec,
+        time->tm_mday, time->tm_mon, time->tm_year + 1900
     );
 }
 
@@ -47,17 +27,22 @@ static void replace_illegal_chars_of(char* str) {
 }
 
 static struct tm* time_of_fstr(const char* fstr) {
-
-    struct tm* time = {0};
+    struct tm* time = malloc(sizeof(struct tm));
+    if (!time) return NULL;
 
     if (sscanf(
-        fstr, "%d-%d-%d__%d-%d-%d__",
+        fstr, "%d-%d-%d__%d-%d-%d_",
         &time->tm_hour, &time->tm_min, &time->tm_sec,
         &time->tm_mday, &time->tm_mon, &time->tm_year
     ) != 6) {
         printf("Error while parsing time for the logger!\n");
+        free(time);
         return NULL;
     }
+
+    time->tm_mon -= 1;
+    time->tm_year -= 1900;
+
     return time;
 }
 
@@ -70,12 +55,14 @@ logger_t* logger_create(
 
     time_t raw_time;
     time(&raw_time);
-    struct tm* time_info = localtime(&raw_time);
+    const struct tm* time_info = localtime(&raw_time);
     logger_t* logger = malloc(
         sizeof(logger_t)
     );
 
-    if (!logger) return NULL;
+    if (!logger) {
+        return NULL;
+    }
 
     *logger = (logger_t) {
         .name = name,
@@ -84,7 +71,12 @@ logger_t* logger_create(
         .func = log_func
     };
 
-    logger->time = time_info;
+    logger->time = malloc(sizeof(struct tm));
+    if (!logger->time) {
+        free(logger);
+        return NULL;
+    }
+    *logger->time = *time_info;
 
     return logger;
 }
@@ -272,32 +264,97 @@ void logger_write(
     );
 }
 
+static void compute_time_stamp(
+    const char* log_name,
+    unsigned long long* stamp_buffer
+) {
+    for (size_t k = strlen(log_name); k > 0; k--) {
+        if (log_name[k] == '_') {
+            char fstr[k + 2];
+            strncpy_s(fstr, k + 1, log_name, k);
+            fstr[k + 1] = '\0';
+
+            struct tm* time = time_of_fstr(fstr);
+            const unsigned long long time_stamp =
+                time->tm_year * pow(10, 10) +
+                time->tm_mon * pow(10, 8) +
+                time->tm_mday * pow(10, 6) +
+                time->tm_hour * pow(10, 4) +
+                time->tm_min * pow(10, 2) +
+                time->tm_sec;
+            free(time);
+
+            *stamp_buffer = time_stamp;
+            break;
+        }
+    }
+}
+
+struct log_s {
+    unsigned long long time_stamp;
+    char* name;
+    bool deletable;
+};
 
 void logger_clean_logs(
-    const char* logs_dir_path,
-    const int max_allowed_log_files
+    const char* log_dir_path,
+    const int max_log_files
 ) {
     char** files = NULL;
     const int file_count = get_dir_files(
-        logs_dir_path,
+        log_dir_path,
         &files
     );
-
-    if (file_count > 0 && files != NULL) {
-        for (int i = 0; i < file_count; i++) {
-            if (!files[i]) {
-                continue;
-            }
-            for (size_t k = strlen(files[i]); k > 0; k--) {
-                if (files[i][k] == '/' || files[i][k] == '\\') {
-
-                }
-            }
-            free(files[i]);
-        }
-        free(files);
+    if (!files) {
+        perror("Error while reading files of log directory");
+        return;
     }
 
+    if (max_log_files >= file_count) {
+        for (int i = 0; i < file_count; i++) free(files[i]);
+        free(files);
+        return;
+    }
+
+
+    struct log_s logs[file_count];
+
+    for (int i = 0; i < file_count; i++) {
+        logs[i].deletable = false;
+        logs[i].name = malloc(
+            sizeof(char) *
+            (strlen(files[i]) + strlen(log_dir_path) + 2)
+        );
+        if (!logs[i].name) {
+            perror("Error while allocation of log name");
+            return;
+        }
+        sprintf(
+            logs[i].name, "%s/%s", log_dir_path,
+            files[i]
+        );
+        compute_time_stamp(files[i], &logs[i].time_stamp);
+        if (files[i]) free(files[i]);
+
+        if (i == 0) continue;
+        if (i < file_count - i) {
+            const size_t prev = i - 1;
+            if (logs[prev].time_stamp < logs[i].time_stamp) {
+                logs[prev].deletable = true;
+            }
+        }
+    }
+    for (size_t i = 0; i < file_count; i++) {
+        if (!logs[i].deletable) {
+            free(logs[i].name);
+            continue;
+        }
+        if (remove(logs[i].name)) {
+            perror("Error while cleanup previous logs");
+        }
+        free(logs[i].name);
+    }
+    free(files);
 }
 
 void logger_del(logger_t* logger) {

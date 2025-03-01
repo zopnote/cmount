@@ -47,7 +47,7 @@ int main(const int argc, char** argv) {
     );
 
     strcat(buffer, "/logs");
-    logger_clean_logs(buffer, 25);
+    logger_clean_logs(buffer, 15);
     logger_del(parse_logger);
     logger_del(logger);
     return EXIT_SUCCESS;
