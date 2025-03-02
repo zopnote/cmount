@@ -47,7 +47,7 @@ static bool scalar(
     const char* value,
     logger_t* logger
 ) {
-    
+    const char* fmt = "Found scalar<%s> %s: %s";
     
     if (entry->type == integer) {
         const long parsed_value = strtol(value, NULL, 10);
@@ -60,11 +60,15 @@ static bool scalar(
 
             entry->size = sizeof(int);
         }
-        return logger->log(
-            logger, info,
-            "(scalar)<integer> %s: %s",
-            entry->key, value
+        const char* fmt_name = "integer";
+        char* msg = malloc(
+            strlen(fmt) + strlen(fmt_name) +
+            strlen(entry->key) + strlen(value) + 1
         );
+        sprintf(msg, fmt, fmt_name, entry->key, value);
+        logger->log(logger, info, msg, 0);
+        free(msg);
+        return true;
     }
     
     if (entry->type == string) {
@@ -72,8 +76,8 @@ static bool scalar(
         entry->buffer = strdup(value);
         return logger->log(
             logger, info,
-            "(scalar)<string> %s: %s",
-            entry->key, value
+            "Found (scalar)<string> %s: %s",
+            2, entry->key, value
         );
     }
 
@@ -85,8 +89,8 @@ static bool scalar(
         entry->buffer = value_ptr;
         return logger->log(
             logger, info,
-            "(scalar)<floating> %s: %s",
-            entry->key, value
+            "Found (scalar)<floating> %s: %s",
+            2, entry->key, value
         );
     }
     return logger->log(
@@ -106,14 +110,14 @@ static bool further_entries(
     yaml_parser_t* parser,
     logger_t* logger
 ) {
-
-    if (entry->type != map) return logger->log(logger, error,
-        "Parser found a map entry type(%d) but awaited "
-        "by the entries map was type(%d).",
-        map, entry->type
+    // The following will return true because there are
+    // at first no difference between a yaml block list and a block map.
+    // Therefore, the parser will always call the entries scan for block list.
+    if (entry->type != map) return true;
+    logger->log(logger, status,
+        "Start scan for %s...",
+        1, entry->key
     );
-
-
     const bool result = scan_recursive(parser,
         (parse_state_t) {
             .entries = entry->buffer,
@@ -123,12 +127,12 @@ static bool further_entries(
 
     if (!result) return logger->log(logger, error,
         "Recursive scan for key %s has failed.",
-        entry->key
+        1, entry->key
     );
 
     return logger->log(logger, status,
         "Recursive scan for key %s is done.",
-        entry->key
+        1, entry->key
     );
 }
 
@@ -144,37 +148,34 @@ static bool follow_list(
     if (entry->type != list) return logger->log(
         logger, error,
         "Wrong type for %s was found. Type list was awaited.",
-        entry->key
+        1, entry->key
     );
 
     if (entry->buffer) {
-        entry->size = entry->size + 1;
+        entry->size++;
         char** entries = realloc(
             entry->buffer,
-            sizeof(char*) * entry->size
+            sizeof(char*) * entry->size + 1
         );
 
         entries[entry->size - 1] = strdup(value);
         entry->buffer = entries;
-
         return logger->log(
-            logger, status,
-            "Added %s to list %s successfully.",
-            value, entry->key
+            logger, info,
+            "Added \"%s\" to %s",
+            2, value, entry->key
         );
     }
 
     char** entries = malloc(sizeof(char*));
-    entries[0] = strdup(value);
-
-    entry->size = 1;
-
     entry->buffer = entries;
-    return logger->log(
-        logger, status,
-        "Added %s to new list %s successfully.",
-        value, entry->key
+    logger->log(
+        logger, info,
+        "Allocated list: %s",
+        1, entry->key
     );
+    follow_list(entry, value, logger);
+    return true;
 }
 
 
@@ -217,62 +218,77 @@ static bool scan_recursive(
     const parse_state_t state,
     logger_t* logger
 ) {
+    logger->log(logger, info,
+        "Scan for %d entries at level %d...",
+        state.size, parser->flow_level
+    );
     yaml_token_t token, next;
     char* key = NULL;
-
     while (token.type != state.end && next.type != state.end) {
+        if (
+            token.type == YAML_ALIAS_TOKEN ||
+            token.type == YAML_TAG_TOKEN ||
+            token.type == YAML_ANCHOR_TOKEN
+        ) logger->log(logger, error,
+            "Aliases, tags and anchors are not supported.",
+        0);
+
         if (&token) yaml_token_delete(&token);
         if (&next) yaml_token_delete(&next);
         yaml_parser_scan(parser, &token);
 
-        printf("tokentype: %s; value: %s\n", get_yaml_token_name(token.type), token.data.scalar.value);
         if (token.type == YAML_KEY_TOKEN) {
             yaml_parser_scan(parser, &next);
             if (key) free(key);
             key = strdup((char*)next.data.scalar.value);
+            bool found = false;
+            for (size_t i = 0; i < state.size; i++) {
+                if (!strcmp(key, state.entries[i].key)) {
+                    found = true;
+                }
+            }
+            if (!found) logger->log(
+               logger, info,
+               "Unknown entry: %s", 1, key
+            );
             continue;
         }
 
-        parse_entry_t* entry = get_entry(key, state.entries, state.size);
-        const char* const value = (char*)next.data.scalar.value;
-        if (!entry) logger->log(logger, info,
-            "Parsed entry contains key(%s) to value(%s) pair "
-            "that isn't awaited by the given entries.",
-            key, value
+        parse_entry_t* entry = get_entry(
+            key, state.entries, state.size
         );
+        if (!entry) continue;
 
         if (token.type == YAML_BLOCK_MAPPING_START_TOKEN) {
             further_entries(entry, parser, logger);
-            continue;
         }
 
-        if (token.type == YAML_VALUE_TOKEN) {
+        else if (token.type == YAML_VALUE_TOKEN) {
             yaml_parser_scan(parser, &next);
-            if (!value) further_entries(entry, parser, logger);
+            if (!next.data.scalar.value) further_entries(entry, parser, logger);
 
-            else scalar(entry, value, logger);
-            continue;
+            else scalar(entry, (char*)next.data.scalar.value, logger);
         }
 
-        if (token.type == YAML_BLOCK_ENTRY_TOKEN) {
+        else if (token.type == YAML_BLOCK_ENTRY_TOKEN) {
             yaml_parser_scan(parser, &next);
 
-            if (!value) continue;
+            if (!next.data.scalar.value) continue;
             const bool result = follow_list(
-                entry, value, logger
+                entry, (char*)next.data.scalar.value, logger
             );
 
             if (!result) logger->log(
                 logger, error,
                 "Can't put the value in list context of %s: %s",
-                entry->key, value
+                2, entry->key, (char*)next.data.scalar.value
             );
         }
     }
 
     if (key) free(key);
-    return logger->log(logger, status,
-        "Scan for level %d is done.",
+    return logger->log(logger, info,
+        "Scan of level %d is done.",
         parser->flow_level
     );
 }
@@ -288,24 +304,25 @@ bool parse_resolve_yaml_string(
     yaml_parser_t parser;
     if (!yaml_parser_initialize(&parser)) return logger->log(
         logger, error,
-        "Yaml parser cannot be initialized."
-    );
+        "Yaml parser cannot be initialized.",
+    0);
 
-
+    char* input = strdup(string);
     yaml_parser_set_input_string(
-        &parser, (unsigned char*)string,
-        sizeof(char) * strlen(string)
+        &parser, (unsigned char*)input, sizeof(char) * strlen(string)
     );
 
     yaml_token_t event;
     while (event.type != YAML_BLOCK_MAPPING_START_TOKEN) {
         yaml_parser_scan(&parser, &event);
 
-        if (event.type == YAML_NO_TOKEN) return logger->log(
-            logger, error,
-            "The following string cannot be resolved by"
-            "the parser: %s", string
-        );
+        if (event.type == YAML_NO_TOKEN) {
+            free(input);
+            return logger->log(logger, error,
+                "The following string cannot be resolved by"
+                "the parser: %s", 1, string
+            );
+        }
     }
 
     const bool result = scan_recursive(&parser,
@@ -315,16 +332,17 @@ bool parse_resolve_yaml_string(
             .end = YAML_STREAM_END_TOKEN
         }, logger);
 
+    free(input);
     if (!result) return logger->log(
         logger, error,
         "Parsing process done."
-    );
+    ,0);
 
     yaml_parser_delete(&parser);
     return logger->log(
         logger, info,
         "Parsing process done."
-    );
+    ,0);
 }
 
 

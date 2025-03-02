@@ -117,7 +117,7 @@ bool get_exe_dir(char* buffer, const size_t buffer_size) {
         buffer_size - 1
     );
 
-    if (path_len != -1) {
+    if (path_len != (long unsigned int)-1) {
         buffer[path_len] = '\0';
         const char* dir = dirname(buffer);
         strncpy(buffer, dir, buffer_size);

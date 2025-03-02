@@ -15,3 +15,5 @@
 /cmake-build-wsl-release/
 /cmake-build-arm-wsl-release/
 /out/
+/cmake-build-win_rel_deb/
+/cmake-build-wsl-rel-deb/

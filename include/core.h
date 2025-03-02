@@ -6,16 +6,13 @@
 #include <stdio.h>
 #include <time.h>
 
-#define return_err(value, err)                              \
-    {errno(##err##);                                         \
-    return value;}
 
 /**
  * @brief Lowercases a string independent of platform.
  * @param string Input string.
  * @return Output string.
  */
-char* str_lwr(char* string);
+char* str_lwr(const char* string);
 
 /**
  * @brief Gets the parent path of a path.
@@ -24,6 +21,18 @@ char* str_lwr(char* string);
  * @return Returns if the process was successful.
  */
 bool parent_path(const char* path, char* buffer);
+
+
+/**
+ * @brief Writes the content of the file to the buffer.
+ * @param path Path of the file.
+ * @param buffer Pointer to the buffer.
+ * @param buffer_size Max length of the buffer.
+ * @return If the function proceed successful.
+ */
+bool read_file(
+    const char* path, char* buffer, size_t buffer_size
+);
 
 /**
  * @brief Copies a file.
@@ -106,8 +115,7 @@ typedef struct logger_s logger_t;
 typedef bool (*logger_callback_t) (
     logger_t* logger,
     logger_significance_t significance,
-    const char* format,
-    ...);
+    const char* format, ...);
 
 
 /**
@@ -116,7 +124,7 @@ typedef bool (*logger_callback_t) (
  * The time is the last time a message was sent.
  * If the file is set, it will get the messages.
  */
-struct logger_s {
+typedef struct logger_s {
     const char* name;
     struct tm* time;
     FILE* file;
@@ -124,7 +132,7 @@ struct logger_s {
     bool verbose;
     bool print_out;
     logger_callback_t log;
-} typedef logger_t;
+} logger_t;
 
 
 /**
@@ -168,12 +176,12 @@ logger_t* logger_create(
  * as well as sets the logger file field.
  *
  * @param logger The logger which will get a file target.
- * @param name_file If the file should be named after the name field of the logger structure.
+ * @param named If the file should be named after the name field of the logger structure.
  * @param dir_path The path where the logger file and its predecessors will be placed.
  */
 void logger_mk_file(
     logger_t* logger,
-    bool name_file,
+    bool named,
     const char* dir_path
 );
 
@@ -221,8 +229,7 @@ void logger_clean_logs(
 bool logger_write(
     logger_t* logger,
     logger_significance_t sign,
-    const char* format,
-    ...);
+    const char* format, ...);
 
 
 /**

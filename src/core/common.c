@@ -3,12 +3,11 @@
 #include <stdbool.h>
 #include <string.h>
 
-char* str_lwr(char* string)
+char* str_lwr(const char* str)
 {
-    for (char* tmp = string; *tmp; ++tmp) {
-        *tmp = tolower((unsigned char)*tmp);
-    }
-    return string;
+    char* temp = strdup(str);
+    for (char* cur = temp; *cur; ++cur) *cur = tolower(*cur);
+    return temp;
 }
 
 bool parent_path(const char* path, char* buffer) {
@@ -31,6 +30,36 @@ bool parent_path(const char* path, char* buffer) {
             return false;
         }
     }
+    return true;
+}
+
+bool read_file(
+    const char* path,
+    char* buffer,
+    const size_t buffer_size
+) {
+    FILE* file = fopen(path, "r");
+    if (!file) {
+        perror("File cannot be opened");
+        return false;
+    }
+
+    const int result = fseek(file, 0, SEEK_SET);
+    if (result != 0) {
+        perror("File cannot be read");
+        return false;
+    }
+
+    char read;
+    size_t i = 0;
+    while ((read = fgetc(file)) != EOF) {
+        if (i >= buffer_size) break;
+        buffer[i] = read;
+        i++;
+    }
+    buffer[i] = '\0';
+
+    fclose(file);
     return true;
 }
 

@@ -14,7 +14,11 @@ set(CMAKE_C_STANDARD 23)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
-
+if (CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Wformat -Wformat-security -Wstack-protector -fstack-protector-strong -Wno-missing-braces")
+else ()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stack-protector")
+endif ()
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
