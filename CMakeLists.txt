@@ -103,7 +103,7 @@ include("${SRC_COMPONENT_DIRECTORY}/cllvm.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/core.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/parse.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/main.cmake")
-include("${SRC_COMPONENT_DIRECTORY}/test.cmake")
+include("${SRC_COMPONENT_DIRECTORY}/tests.cmake")
 # -----------------------------------------------------------------------------
 
 

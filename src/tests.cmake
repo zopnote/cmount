@@ -1,10 +1,10 @@
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
-    add_executable(logger_test ${SRC_COMPONENT_DIRECTORY}/test/logger_test.c)
+    add_executable(logger_test ${SRC_COMPONENT_DIRECTORY}/tests/logger_test.c)
     target_link_libraries(logger_test core)
-    add_executable(parse_test ${SRC_COMPONENT_DIRECTORY}/test/parse_test.c)
+    add_executable(parse_test ${SRC_COMPONENT_DIRECTORY}/tests/parse_test.c)
     target_link_libraries(parse_test core parse)
-    add_executable(main_test ${SRC_COMPONENT_DIRECTORY}/test/main_test.c)
+    add_executable(main_test ${SRC_COMPONENT_DIRECTORY}/tests/main_test.c)
     target_link_libraries(main_test ${PROJECT_NAME}_lib)
     target_include_directories(main_test PUBLIC ${SRC_COMPONENT_DIRECTORY}/main)
 endif ()
