@@ -136,14 +136,6 @@ typedef struct logger_s {
 } logger_t;
 
 
-/**
- * @brief Structure to save the values for sequences of messages printed in to a logger.
- */
-struct message {
-    const char* format;
-    char* args;
-};
-
 
 /**
  * @brief Creates a new logger.
@@ -233,28 +225,11 @@ bool logger_write(
     const char* format, ...);
 
 
-/**
- * @brief Writes a sequence of strings in the logger.
- *
- * A sequence of messages can be used to print in
- * colored messages or strings from different locations in memory.
- *
- * If the logger file is set, all messages are written to the file.
- * Printing to the stdout depends on should_print_in_console of logger.
- * Verbose messages will always be written into the file,
- * but if it would be printed in the stdout depends on verbose of logger.
- *
- * @param logger Logger which consists of the conditions.
- * @param significance Importance of the messages that will be printed.
- * @param messages Array of format able colored strings.
- * @param messages_length Length of the array.
- */
-void logger_write_sequence(
-    logger_t* logger,
-    logger_significance_t significance,
-    const struct message* messages,
-    size_t messages_length
+bool logger_write_sequence(
+    logger_t* logger, const logger_significance_t significance,
+    char** messages, const size_t message_count
 );
+
 
 
 /**
