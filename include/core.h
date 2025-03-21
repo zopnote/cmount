@@ -12,7 +12,7 @@
  * @param string Input string.
  * @return Output string.
  */
-char* str_lwr(const char* string);
+char* str_to_lower(const char* string);
 
 /**
  * @brief Gets the parent path of a path.
@@ -20,18 +20,18 @@ char* str_lwr(const char* string);
  * @param buffer Buffer that will get the parent path.
  * @return Returns if the process was successful.
  */
-bool parent_path(char* buffer, const char* path);
+bool superior_path(char* buffer, const char* path);
 
 
 /**
  * @brief Writes the content of the file to the buffer.
- * @param path Path of the file.
+ * @param file The file that content will be get.
  * @param buffer Pointer to the buffer.
  * @param buffer_size Max length of the buffer.
  * @return If the function proceed successful.
  */
-bool read_file(
-    const char* path, char* buffer, size_t buffer_size
+bool fcontent(
+    char* buffer, size_t buffer_size, FILE* file
 );
 
 /**
@@ -40,7 +40,7 @@ bool read_file(
  * @param destination_path Full path of the file that will be created.
  * @return Returns if the process was successful.
  */
-bool cpy_file(FILE* source_file, const char* destination_path);
+bool fcopy(FILE* source_file, const char* destination_path);
 
 /**
  * @brief Gets the directory the program runs at.
@@ -49,7 +49,7 @@ bool cpy_file(FILE* source_file, const char* destination_path);
  * @param buffer_size Size of the buffer.
  * @return Returns if the buffer is set.
  */
-bool get_work_dir(char* buffer, size_t buffer_size);
+bool work_dir(char* buffer, size_t buffer_size);
 
 
 /**
@@ -59,7 +59,7 @@ bool get_work_dir(char* buffer, size_t buffer_size);
  * @param buffer_size Size of the buffer.
  * @return Returns if the buffer is set.
  */
-bool get_exe_dir(char* buffer, size_t buffer_size);
+bool exe_dir(char* buffer, size_t buffer_size);
 
 
 /**
@@ -77,7 +77,7 @@ bool can_access(const char* path);
  * @param path Path of the directory that should be created.
  * @return Returns if the creation of the directory succeeded.
  */
-bool mk_dir(const char* path);
+bool make_dir(const char* path);
 
 
 /**
@@ -87,7 +87,7 @@ bool mk_dir(const char* path);
  * @param dir_path Path of the directory that will be scanned.
  * @return Returns the length of the buffer array, which is the count of found files.
  */
-int get_dir_files(const char* dir_path, char*** buffer);
+int list_files(const char* dir_path, char*** buffer);
 
 
 /**

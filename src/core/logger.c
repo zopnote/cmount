@@ -89,7 +89,7 @@ static bool get_meta(
 
     buffer[size] = '\0';
 
-    printf("\nBuffer: %s\n", str_lwr(buffer));
+    printf("\nBuffer: %s\n", strlwr(buffer));
     return true;
 }
 
@@ -114,18 +114,18 @@ static bool archive(const char* file_path) {
     const size_t archived_path_size = strlen(file_path) +
         strlen(meta) + 6;
     char* archived_path = malloc(archived_path_size);
-    if (!parent_path(archived_path, file_path)) {
+    if (!superior_path(archived_path, file_path)) {
         fclose(file_path);
         return false;
     }
     strcat(archived_path, "/logs");
-    mk_dir(archived_path);
+    make_dir(archived_path);
 
     replace_unknown_chars(meta);
     strcat(meta, ".log");
     sprintf(archived_path, "%s/%s", archived_path, meta);
 
-    if (!cpy_file(old_file, archived_path)) {
+    if (!fcopy(old_file, archived_path)) {
         fprintf(stderr, "File %s can't be copied.\n", file_path);
         fclose(old_file);
         return false;
@@ -230,7 +230,7 @@ void logger_mk_file(
 ) {
     const char* unnamed = "latest";
     char* name = strdup(unnamed);
-    if (named) name = str_lwr(logger->name);
+    if (named) name = str_to_lower(logger->name);
 
     strcat(name, ".log");
     char* path = malloc(strlen(dir_path) + strlen(name) + 1);
@@ -354,7 +354,7 @@ void logger_clean_logs(
     const char* log_dir_path, const int max_log_files
 ) {
     char** files = NULL;
-    const int file_count = get_dir_files(
+    const int file_count = list_files(
         log_dir_path, &files
     );
     if (!files) {

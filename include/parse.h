@@ -62,7 +62,7 @@ typedef struct {
  * @param entries_length Length of the entries array.
  * @param logger Defines where information while the process about the processing should go to.
  */
-bool parse_resolve_yaml_string(
+bool parse_resolve(
     const char* string,
     parse_entry_t* entries,
     size_t entries_length,
@@ -77,42 +77,11 @@ bool parse_resolve_yaml_string(
  * @param entries_length Length of the entries buffer array.
  * @param logger Defines where information while the process about the processing should go to.
  */
-void parse_emit_yaml_string(
+void parse_emit(
     char* buffer,
     const parse_entry_t* entries,
     size_t entries_length,
     const logger_t* logger
 );
 
-/**
- * @brief Initialize the json parser with the input string and continues with the scan.
- *
- * The entries array buffer will be filled with the found values.
- *
- * @param string String that will be parsed in the entries buffer array.
- * @param entries Buffer array that defines for which values will be looked for and processed.
- * @param entries_length Length of the entries array.
- * @param logger Defines where information while the process about the processing should go to.
- */
-void parse_resolve_json_string(
-    const char* string,
-    parse_entry_t* entries,
-    size_t entries_length,
-    const logger_t* logger
-);
-
-/**
- * @brief Writes the entries to the string buffer with the desired configuration format.
- *
- * @param buffer String buffer which the emitted json will go to.
- * @param entries Buffer array that define which values will be processed.
- * @param entries_length Length of the entries buffer array.
- * @param logger Defines where information while the process about the processing should go to.
- */
-void parse_emit_json_string(
-    char* buffer,
-    const parse_entry_t* entries,
-    size_t entries_length,
-    const logger_t* logger
-);
 

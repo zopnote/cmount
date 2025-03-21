@@ -9,11 +9,11 @@
 #include <io.h>
 #include <windows.h>
 
-bool get_work_dir(char* buffer, const size_t buffer_size) {
+bool work_dir(char* buffer, const size_t buffer_size) {
     return _getcwd(buffer, buffer_size);
 }
 
-bool get_exe_dir(char* buffer, const size_t buffer_size) {
+bool exe_dir(char* buffer, const size_t buffer_size) {
     
     char path[MAX_PATH];
     
@@ -45,12 +45,12 @@ bool can_access(const char* path) {
     return _access(path, 4) == 0;
 }
 
-bool mk_dir(const char* path) {
+bool make_dir(const char* path) {
     return _mkdir(path) == 0;
 }
 
 
-int get_dir_files(const char* dir_path, char*** buffer) {
+int list_files(const char* dir_path, char*** buffer) {
     WIN32_FIND_DATA found_file_data;
     auto found_file = INVALID_HANDLE_VALUE;
     int total_count = 0;
@@ -130,7 +130,7 @@ bool can_access(const char* path) {
     return access(path, R_OK) == 0;
 }
 
-bool mk_dir(const char* path) {
+bool make_dir(const char* path) {
     return mkdir(path, 0755) == 0;
 }
 

@@ -5,14 +5,6 @@ binary: @OUT_BINARY_DIRECTORY@
 internal: @OUT_INTERNAL_DIRECTORY@
 cache: @OUT_CACHE_DIRECTORY@
 
-test:
-  hello: yay
-
-listtest:
-  - wa
-  - was
-  - zum
-  - Meier
 # Related to third party library usage
 library: @OUT_LIBRARY_DIRECTORY@
 include: @OUT_INCLUDE_DIRECTORY@

@@ -57,7 +57,12 @@ endif()
 set(MAIN_EXECUTABLE_NAME ${PROJECT_NAME})
 
 # The binary and internal paths are hard coded in the program
-set(OUT_BINARY_DIRECTORY bin)
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(OUT_BINARY_DIRECTORY .)
+else()
+    set(OUT_BINARY_DIRECTORY bin)
+endif()
+
 set(OUT_INTERNAL_DIRECTORY ${OUT_BINARY_DIRECTORY}/internal)
 set(OUT_CACHE_DIRECTORY ${OUT_BINARY_DIRECTORY}/cache)
 

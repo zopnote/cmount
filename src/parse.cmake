@@ -1,6 +1,5 @@
 
 set(PARSE_SOURCE_FILES
-        ${SRC_COMPONENT_DIRECTORY}/parse/emit.c
         ${SRC_COMPONENT_DIRECTORY}/parse/resolve.c
 )
 

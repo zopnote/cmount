@@ -1,14 +1,17 @@
 set(RT_RES_DIRECTORIES
         internal
+        config
 )
 set(RT_BIN_OUT_DIRECTORIES
         internal/
+        config/
 )
 set(RT_RES_OUT_DIRECTORIES
         ${OUT_INTERNAL_DIRECTORY}
+        ${OUT_CONFIG_DIRECTORY}
 )
 
-foreach(INDEX RANGE 0 0)
+foreach(INDEX RANGE 0 1)
 
     list(GET RT_RES_DIRECTORIES ${INDEX} DIRECTORY)
     list(GET RT_RES_OUT_DIRECTORIES ${INDEX} OUT_DIRECTORY)

@@ -3,14 +3,14 @@
 #include <stdbool.h>
 #include <string.h>
 
-char* str_lwr(const char* str)
+char* str_to_lower(const char* string)
 {
-    char* temp = strdup(str);
+    char* temp = strdup(string);
     for (char* cur = temp; *cur; ++cur) *cur = tolower(*cur);
     return temp;
 }
 
-bool parent_path(char* buffer, const char* path) {
+bool superior_path(char* buffer, const char* path) {
     bool terminated = false;
     size_t i = strlen(path) + 1;
     while (i > 0) {
@@ -33,12 +33,11 @@ bool parent_path(char* buffer, const char* path) {
     return true;
 }
 
-bool read_file(
-    const char* path,
+bool fcontent(
     char* buffer,
-    const size_t buffer_size
+    const size_t buffer_size,
+    FILE* file
 ) {
-    FILE* file = fopen(path, "r");
     if (!file) {
         perror("File cannot be opened");
         return false;
@@ -59,11 +58,10 @@ bool read_file(
     }
     buffer[i] = '\0';
 
-    fclose(file);
     return true;
 }
 
-bool cpy_file(
+bool fcopy(
     FILE* source_file, const char* destination_path
 ) {
     FILE* target_file = fopen(destination_path, "w");

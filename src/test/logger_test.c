@@ -7,7 +7,7 @@ int main() {
         "test_logger", false, true, logger_write
     );
     char bin_path[128];
-    get_exe_dir(bin_path, 128);
+    exe_dir(bin_path, 128);
     logger_mk_file(test_logger, true, bin_path);
     test_logger->log(test_logger, status, "Hello World!");
     const char* ending = "logs";
