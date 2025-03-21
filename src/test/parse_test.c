@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static parse_entry_t paths[] = {
+static parse_entry_t paths_entries[] = {
     "binary", string, NULL, 0,
     "internal", string, NULL, 0,
     "cache", string, NULL, 0,
@@ -31,7 +31,7 @@ int main() {
     fcontent(file_content, file_size, yaml_file);
     fclose(yaml_file);
 
-    parse_resolve(file_content, paths, 9, logger);
+    parse_resolve(file_content, paths_entries, 9, logger);
     exe_dir(bin_path, 128);
     const char* ending = "logs";
     const size_t log_dir_size = strlen(bin_path) + strlen(ending) + 1;

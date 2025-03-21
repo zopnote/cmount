@@ -8,64 +8,50 @@ struct {
 struct {
     char** lines;
     const size_t lines_count;
-    placeholder_t* placeholder;
-    size_t placeholder_count;
 } typedef message_t;
 
-static parse_entry_t messages[] = {
+static parse_entry_t messages_entries[] = {
     "help", list, NULL, 0
 };
 
-static const size_t messages_count =
-    sizeof(messages) / sizeof(messages[0]);
+static const size_t messages_entries_count =
+    sizeof(messages_entries) / sizeof(messages_entries[0]);
 
 inline bool messages_load(
     const char* buffer, logger_t* logger
 ) {
     return parse_resolve(
-        buffer, messages, messages_count, logger
+        buffer, messages_entries, messages_entries_count, logger
     );
 }
 
 inline message_t messages_get(const char* key) {
-    for (size_t i = 0; i < messages_count; i++)
-        if (strcmp(key, messages[i].key))
-            if (messages[i].type == list || messages[i].type == string)
-                if (messages[i].buffer) return (message_t) {
-                    .lines = messages[i].buffer,
-                    .lines_count = messages[i].size,
-                    .placeholder = NULL,
-                    .placeholder_count = 0
-                };
+    for (size_t i = 0; i < messages_entries_count; i++) {
+        if (strcmp(key, messages_entries[i].key)) continue;
+        if (messages_entries[i].buffer) return (message_t) {
+            .lines = messages_entries[i].buffer,
+            .lines_count = messages_entries[i].size
+        };
+    }
     return (message_t) {
         .lines = NULL,
-        .lines_count = 0,
-        .placeholder = NULL,
-        .placeholder_count = 0
+        .lines_count = 0
     };
 }
 
-inline bool messages_add_placeholder(
-    message_t* message, placeholder_t* placeholder
-) {
-    if (message->placeholder) {
-        message->placeholder_count++;
-        message->placeholder = realloc(
-            message->placeholder,
-            message->placeholder_count *
-            sizeof(placeholder_t)
-        );
-
-    }
-}
-
 inline bool messages_log(
-    message_t* message, logger_t* logger
+    message_t* message, placeholder_t* placeholder,
+    const size_t placeholder_count
 ) {
-    logger_write_sequence()
+    char** messages = malloc(
+        message->lines_count * sizeof(message->lines[0])
+    );
+    for (size_t i = 0; i < message->lines_count; i++) {
+        for (size_t p = 0; p < placeholder_count; p++) {
+
+        }
+    }
+    free(messages);
+
 }
 
-
-inline bool messages_free(message_t* message) {
-    logger_write_sequence()
-}

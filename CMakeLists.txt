@@ -3,26 +3,30 @@ cmake_minimum_required(VERSION 3.13)
 project(cmount
         DESCRIPTION "Unifying application for efficient and C-dependent program development."
         VERSION 0.1
-        LANGUAGES C
+        LANGUAGES C CXX
 )
 
 
 # Language related
 # -----------------------------------------------------------------------------
 set(CMAKE_C_STANDARD 23)
+set(CMAKE_CXX_STANDARD 23)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Wformat -Wformat-security -Wstack-protector -fstack-protector-strong -Wno-missing-braces")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wformat -Wformat-security -Wstack-protector -fstack-protector-strong -Wno-missing-braces")
 else ()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stack-protector")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-stack-protector")
 endif ()
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-microsoft -Wno-deprecated-declarations")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-microsoft -Wno-deprecated-declarations")
 endif()
 # -----------------------------------------------------------------------------
 
@@ -95,6 +99,7 @@ include(${CMAKE_SOURCE_DIR}/vendor/dmon.cmake)
 # Actual source configuration of CMount
 # -----------------------------------------------------------------------------
 set(SRC_COMPONENT_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
+include("${SRC_COMPONENT_DIRECTORY}/cllvm.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/core.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/parse.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/main.cmake")
