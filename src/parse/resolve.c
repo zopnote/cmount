@@ -304,8 +304,8 @@ bool parse_resolve_yaml_string(
     yaml_parser_t parser;
     if (!yaml_parser_initialize(&parser)) return logger->log(
         logger, error,
-        "Yaml parser cannot be initialized.",
-    0);
+        "Yaml parser cannot be initialized."
+    );
 
     char* input = strdup(string);
     yaml_parser_set_input_string(
@@ -320,7 +320,7 @@ bool parse_resolve_yaml_string(
             free(input);
             return logger->log(logger, error,
                 "The following string cannot be resolved by"
-                "the parser: %s", 1, string
+                "the parser: %s", string
             );
         }
     }
@@ -336,13 +336,13 @@ bool parse_resolve_yaml_string(
     if (!result) return logger->log(
         logger, error,
         "Parsing process done."
-    ,0);
+    );
 
     yaml_parser_delete(&parser);
     return logger->log(
         logger, info,
         "Parsing process done."
-    ,0);
+    );
 }
 
 

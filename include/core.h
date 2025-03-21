@@ -20,7 +20,7 @@ char* str_lwr(const char* string);
  * @param buffer Buffer that will get the parent path.
  * @return Returns if the process was successful.
  */
-bool parent_path(const char* path, char* buffer);
+bool parent_path(char* buffer, const char* path);
 
 
 /**
@@ -36,11 +36,11 @@ bool read_file(
 
 /**
  * @brief Copies a file.
- * @param file File content that will be copied.
- * @param new_file Full path of the file that will be created.
+ * @param source_file File content that will be copied.
+ * @param destination_path Full path of the file that will be created.
  * @return Returns if the process was successful.
  */
-bool cpy_file(FILE* file, const char* new_file);
+bool cpy_file(FILE* source_file, const char* destination_path);
 
 /**
  * @brief Gets the directory the program runs at.
@@ -96,6 +96,7 @@ int get_dir_files(const char* dir_path, char*** buffer);
  * Notes will only be printed to verbose targets.
  */
 typedef enum {
+    critical,
     error,
     warning,
     status,
@@ -222,7 +223,7 @@ void logger_clean_logs(
  *
  * @param logger Logger which consists of the conditions.
  * @param sign Importance of the messages that will be printed.
- * @param format String that will be formated with the arguments, just like with printf().
+ * @param format String that will be formated with the arguments.
  * @param ... Arguments that will be inserted in the print call.
  * @return Returns result for error handling.
  */
@@ -264,3 +265,4 @@ void logger_write_sequence(
  * @param logger The logger which fields will be freed.
  */
 void logger_del(logger_t* logger);
+

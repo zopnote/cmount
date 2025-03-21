@@ -8,9 +8,11 @@ static bool str_of_time(const struct tm* time, char* buffer) {
     return sprintf(
         buffer, "%02d:%02d:%02d, %02d-%02d-%d",
         time->tm_hour, time->tm_min, time->tm_sec,
-        time->tm_mday, time->tm_mon, time->tm_year + 1900
+        time->tm_mday, time->tm_mon + 1, time->tm_year + 1900
     );
 }
+
+
 
 static struct tm* time_of_str(const char* str) {
     struct tm* time = malloc(sizeof(struct tm));
@@ -26,7 +28,7 @@ static struct tm* time_of_str(const char* str) {
     ) == 6) return time;
 
     if (sscanf(
-        str, "%d:%d:%d, %d-%d-%d,",
+        str, "%d:%d:%d, %d-%d-%d ",
         &time->tm_hour, &time->tm_min, &time->tm_sec,
         &time->tm_mday, &time->tm_mon, &time->tm_year
     ) == 6) return time;
@@ -35,6 +37,8 @@ static struct tm* time_of_str(const char* str) {
     free(time);
     return NULL;
 }
+
+
 
 static void replace_unknown_chars(char* buffer) {
     for (size_t i = 0; i < strlen(buffer); i++) {
@@ -45,11 +49,141 @@ static void replace_unknown_chars(char* buffer) {
 
 
 
+static bool get_meta(
+    char* buffer, const size_t buffer_length, FILE* file
+) {
+    fseek(file, 0, SEEK_END);
+    const long file_size = ftell(file);
+    if (file_size == -1) {
+        perror("Error while seeking file size");
+        return false;
+    }
+
+    int end = -1, start = -1;
+    for (long i = file_size - 1; i >= 0; i--) {
+        fseek(file, i, SEEK_SET);
+        char cur;
+        if (fread(&cur, 1, 1, file) != 1) {
+            perror("Error while reading file");
+            return false;
+        }
+
+        if (cur == ')' && end == -1) end = i;
+        else if (cur == '(') {
+            start = i;
+            break;
+        }
+    }
+
+    if (start == -1 || end == -1 || start >= end)
+        return false;
+
+    const size_t size = (end - start - 1);
+    if (size >= buffer_length) return false;
+
+    fseek(file, start + 1, SEEK_SET);
+    if (fread(buffer, 1, size, file) != size) {
+        perror("Error while reading file content");
+        return false;
+    }
+
+    buffer[size] = '\0';
+
+    printf("\nBuffer: %s\n", str_lwr(buffer));
+    return true;
+}
+
+
+
+static bool archive(const char* file_path) {
+    FILE* old_file = fopen(file_path, "r");
+    if (!old_file) {
+        fprintf(stderr,
+            "Can't open log file to archive its content."
+        );
+        return false;
+    }
+    const size_t meta_size = 64;
+    char meta[meta_size];
+    if (!get_meta(meta, meta_size, old_file)) {
+        fprintf(stderr, "No valid meta in %s.\n", file_path);
+        fclose(old_file);
+        return false;
+    }
+
+    const size_t archived_path_size = strlen(file_path) +
+        strlen(meta) + 6;
+    char* archived_path = malloc(archived_path_size);
+    if (!parent_path(archived_path, file_path)) {
+        fclose(file_path);
+        return false;
+    }
+    strcat(archived_path, "/logs");
+    mk_dir(archived_path);
+
+    replace_unknown_chars(meta);
+    strcat(meta, ".log");
+    sprintf(archived_path, "%s/%s", archived_path, meta);
+
+    if (!cpy_file(old_file, archived_path)) {
+        fprintf(stderr, "File %s can't be copied.\n", file_path);
+        fclose(old_file);
+        return false;
+    }
+    fclose(old_file);
+    bool result = true;
+    if (can_access(file_path)) result = remove(file_path);
+    return result;
+}
+
+
+
+static void compute_time_stamp(
+    const char* log_path, unsigned long long* stamp_buffer
+) {
+    size_t start;
+    for (start = strlen(log_path); start > 0; start--)
+        if (log_path[start - 1] == '/' ||
+            log_path[start - 1] == '\\'
+        ) break;
+
+    size_t end;
+    for (end = strlen(log_path); end > 0; end--)
+        if (log_path[end - 1] == '_') break;
+
+    if (end <= start) {
+        fprintf(stderr, "Error: end_index <= start_index.\n");
+        return;
+    }
+
+    char* file_name = malloc(end - start + 1);
+    strncpy(file_name, log_path + start, end - start);
+    file_name[end - start] = '\0';
+
+    struct tm* time = time_of_str(file_name);
+    if (!time) {
+        free(file_name);
+        free(time);
+        fprintf(stderr, "An error occurred while parsing the time.\n");
+        return;
+    }
+    const unsigned long long time_stamp =
+        time->tm_year * pow(10, 10) +
+        time->tm_mon * pow(10, 8) +
+        time->tm_mday * pow(10, 6) +
+        time->tm_hour * pow(10, 4) +
+        time->tm_min * pow(10, 2) +
+        time->tm_sec;
+    free(time);
+
+    *stamp_buffer = time_stamp;
+}
+
+
+
 logger_t* logger_create(
-    const char* name,
-    const bool verbose,
-    const bool print_stdout,
-    const logger_callback_t log_func
+    const char* name, const bool verbose,
+    const bool print_stdout, const logger_callback_t log_func
 ) {
 
     time_t raw_time;
@@ -91,106 +225,61 @@ void logger_add_file(logger_t* logger, FILE* file) {
     logger->file = file;
 }
 
-static bool get_file_meta(
-    FILE* file,
-    char* buffer,
-    const size_t buffer_length
-) {
-    char cur;
-    int end = -1, start = -1;
-    while ((cur = fgetc(file)) != EOF) {
-        if (cur == '(') start = ftell(file);
-        else if (cur == ')') end = ftell(file);
-    }
-    if (start == -1 || end == -1 ||
-        start >= end
-    ) return false;
-
-    fseek(file, start, SEEK_SET);
-    const size_t size = end - start;
-    if (size > buffer_length) return false;
-
-    fread(buffer, sizeof(char), size, file);
-    buffer[size] = '\0';
-
-    sprintf(buffer, "%s", str_lwr(buffer));
-    return true;
-}
-
-static bool archive_log(const char* file_path) {
-    FILE* log_file = fopen(file_path, "r");
-    if (!log_file) return fprintf(
-        stderr, "Can't open log file to archive its content."
-    );
-    char meta[64];
-    if (!get_file_meta(log_file, meta, 64)) {
-        fprintf(stderr, "No valid meta in %s.\n", file_path);
-        fclose(log_file);
-        return false;
-    }
-    char* dir_path = malloc(strlen(file_path) + 1);
-    if (!parent_path(file_path, dir_path)) {
-        fclose(log_file);
-        return false;
-    }
-    strcat(dir_path, "/logs");
-    mk_dir(dir_path);
-
-    replace_unknown_chars(meta);
-    strcat(meta, ".log");
-    sprintf(dir_path, "/%s", meta);
-
-    if (!cpy_file(log_file, dir_path)) {
-        fprintf(stderr, "File %s can't be copied.\n", file_path);
-        fclose(log_file);
-        return false;
-    }
-    fclose(log_file);
-    return remove(file_path);
-}
-
 void logger_mk_file(
-    logger_t* logger,
-    const bool named,
-    const char* dir_path
+    logger_t* logger, const bool named, const char* dir_path
 ) {
     const char* unnamed = "latest";
     char* name = strdup(unnamed);
+    if (named) name = str_lwr(logger->name);
 
-    if (named) {
-        free(name);
-        name = str_lwr(logger->name);
-    }
     strcat(name, ".log");
-
     char* path = malloc(strlen(dir_path) + strlen(name) + 1);
     sprintf(path, "%s/%s", dir_path, name);
 
-    bool archived = false;
-    if (can_access(path)) archived = archive_log(path);
-    if (!archived) if (!remove(path)) {
+    bool success = false;
+    if (can_access(path)) success = archive(path);
+    else success = true;
+
+    if (!success && !remove(path)) {
         if (!named) logger_mk_file(logger, true, dir_path);
-        free(path);
         return;
     }
     logger->own_file = true;
     logger->file = fopen(path, "a");
-    free(path);
-    logger->log(logger, info, "Logger mounted to file.", 0);
+    logger->log(logger, info, "Logger mounted to file.");
 }
 
-
 bool logger_write(
-    logger_t* logger,
-    const logger_significance_t sign,
+    logger_t* logger, const logger_significance_t sign,
     const char* format, ...
 ) {
-    va_list args;
-    va_start(args, format);
-    const int size = vsnprintf(NULL, 0, format, args) + 1;
-    char* msg = malloc(size);
-    vsnprintf(msg, size, format, args);
-    va_end(args);
+    bool found_arg = false;
+    for (size_t i = 0; i < strlen(format); i++)
+        if (format[i] == '%') found_arg = true;
+
+    char* msg;
+
+    if (found_arg) {
+        va_list args;
+        va_start(args, format);
+        #if _WIN32
+        const int size = _vscprintf(format, args);
+        #else
+        const int size = vsnprintf(NULL, 0, format, args);
+        #endif
+
+        va_end(args);
+
+        if (size < 0) return NULL;
+
+        msg = malloc(size + 1);
+        if (!msg) return NULL;
+
+        va_start(args, format);
+        vsnprintf(msg, size + 1, format, args);
+        va_end(args);
+    }
+    else msg = strdup(format);
 
     char* meta = malloc(strlen(logger->name) + 24);
     time_t raw_time;
@@ -225,10 +314,11 @@ bool logger_write(
         char* name;
         bool print_out;
     } names[] = {
-        {error, "Error", true},
-        {warning, "Warning", logger->print_out},
-        {status, "Status", logger->print_out},
-        {info, "Info", logger->print_out && logger->verbose}
+        {critical, "CRITICAL", true},
+        {error, "ERROR", true},
+        {warning, "WARNING", logger->print_out},
+        {status, "STATUS", logger->print_out},
+        {info, "INFO", logger->print_out && logger->verbose}
     };
 
     if (names[sign].print_out) printf("%s\n", msg);
@@ -240,70 +330,28 @@ bool logger_write(
     }
 
     char* final_msg = malloc(
-        strlen(msg) + strlen(meta) +
-        strlen(names[sign].name) + 6
+        strlen(msg) + strlen(logger->name) +
+        strlen(names[sign].name) + 30
     );
     sprintf(
-        final_msg, "%s(%s): %s\n",
-        names[sign].name, meta, msg
+        final_msg, "(%s)  %s  %s\n",
+        meta, names[sign].name, msg
     );
-    free(meta);
-    free(msg);
-
     fwrite(
         final_msg, sizeof(char),
         strlen(final_msg), logger->file
     );
+
+    free(meta);
+    free(msg);
     free(final_msg);
     return sign != error;
 }
 
 
-static void compute_time_stamp(
-    const char* log_path,
-    unsigned long long* stamp_buffer
-) {
-    size_t start;
-    for (start = strlen(log_path); start > 0; start--)
-        if (log_path[start - 1] == '/' ||
-            log_path[start - 1] == '\\'
-        ) break;
-
-    size_t end;
-    for (end = strlen(log_path); end > 0; end--)
-        if (log_path[end - 1] == '_') break;
-
-    if (end <= start) {
-        fprintf(stderr, "Error: end_index <= start_index.\n");
-        return;
-    }
-
-    char* file_name = malloc(end - start + 1);
-    strncpy(file_name, log_path + start, end - start);
-    file_name[end - start] = '\0';
-
-    struct tm* time = time_of_str(file_name);
-    if (!time) {
-        free(file_name);
-        free(time);
-        fprintf(stderr, "An error occurred while parsing the time.\n");
-        return;
-    }
-    const unsigned long long time_stamp =
-        time->tm_year * pow(10, 10) +
-        time->tm_mon * pow(10, 8) +
-        time->tm_mday * pow(10, 6) +
-        time->tm_hour * pow(10, 4) +
-        time->tm_min * pow(10, 2) +
-        time->tm_sec;
-    free(time);
-
-    *stamp_buffer = time_stamp;
-}
 
 void logger_clean_logs(
-    const char* log_dir_path,
-    const int max_log_files
+    const char* log_dir_path, const int max_log_files
 ) {
     char** files = NULL;
     const int file_count = get_dir_files(
@@ -366,12 +414,12 @@ void logger_clean_logs(
     free(files);
 }
 
+
+
 void logger_del(logger_t* logger) {
     if (!logger) return;
     if (!logger->time) free(logger->time);
-    logger->log(
-        logger, status, "Disposal of logger %s.", 1, logger->name
-    );
+    logger->log(logger, info, "Disposal of logger %s.", logger->name);
     if (logger->file && logger->own_file) fclose(logger->file);
     logger = NULL;
 }

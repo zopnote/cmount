@@ -45,12 +45,12 @@ enum parse_type_e {
  * what the buffer should be and set it. Buffers can be null even after
  * the parse process, if the value was not found.
  */
-struct {
+typedef struct {
     char* key;
     enum parse_type_e type;
     void* buffer;
     size_t size;
-} typedef parse_entry_t;
+} parse_entry_t;
 
 /**
  * @brief Initialize the yaml parser with the input string and continues with the scan.
@@ -115,3 +115,4 @@ void parse_emit_json_string(
     size_t entries_length,
     const logger_t* logger
 );
+

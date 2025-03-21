@@ -10,7 +10,7 @@ char* str_lwr(const char* str)
     return temp;
 }
 
-bool parent_path(const char* path, char* buffer) {
+bool parent_path(char* buffer, const char* path) {
     bool terminated = false;
     size_t i = strlen(path) + 1;
     while (i > 0) {
@@ -63,19 +63,21 @@ bool read_file(
     return true;
 }
 
-bool cpy_file(FILE* file, const char* new_file) {
-    FILE* target_file = fopen(new_file, "w");
+bool cpy_file(
+    FILE* source_file, const char* destination_path
+) {
+    FILE* target_file = fopen(destination_path, "w");
     if (!target_file) {
         return false;
     }
 
-    const int result = fseek(file, 0, SEEK_SET);
+    const int result = fseek(source_file, 0, SEEK_SET);
 
     if (result != 0) {
         return false;
     }
     char read;
-    while ((read = fgetc(file)) != EOF) {
+    while ((read = fgetc(source_file)) != EOF) {
         fputc(read, target_file);
     }
 
