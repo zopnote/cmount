@@ -348,7 +348,12 @@ bool logger_write(
     return sign != error;
 }
 
+void logger_write_sequence(
+    logger_t* logger, logger_significance_t significance,
+    const struct message* messages, size_t messages_length
+) {
 
+}
 
 void logger_clean_logs(
     const char* log_dir_path, const int max_log_files

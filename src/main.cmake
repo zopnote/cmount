@@ -13,6 +13,9 @@ set(SRC_FILES_MAIN_EXECUTABLE
 )
 add_executable(${PROJECT_NAME} ${SRC_FILES_MAIN_EXECUTABLE})
 
+add_library(${PROJECT_NAME}_lib ${SRC_FILES_MAIN_EXECUTABLE})
+target_link_libraries(${PROJECT_NAME}_lib parse core)
+
 target_link_libraries(${PROJECT_NAME} parse core)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${OUT_BINARY_DIRECTORY})

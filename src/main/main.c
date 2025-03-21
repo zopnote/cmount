@@ -1,7 +1,8 @@
 #include <core.h>
-#include <parse.h>
 #include <stdlib.h>
 #include <string.h>
+#include "schema/messages.h"
+#include "schema/paths.h"
 
 typedef bool (*task)();
 int main(int argc, char** argv) {
@@ -17,6 +18,10 @@ int main(int argc, char** argv) {
     logger_mk_file(parse_logger, true, bin_path);
     logger->log(logger, info, "CMount binaries located at %s", bin_path);
 
+
+    if (argc == 0) {
+
+    }
 
     const char* ending = "logs";
     const size_t log_dir_size = strlen(bin_path) + strlen(ending) + 1;
