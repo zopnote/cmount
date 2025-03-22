@@ -99,7 +99,7 @@ include(${CMAKE_SOURCE_DIR}/vendor/dmon.cmake)
 # Actual source configuration of CMount
 # -----------------------------------------------------------------------------
 set(SRC_COMPONENT_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
-include("${SRC_COMPONENT_DIRECTORY}/cllvm.cmake")
+include("${SRC_COMPONENT_DIRECTORY}/runner.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/core.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/parse.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/main.cmake")
