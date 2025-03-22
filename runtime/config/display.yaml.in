@@ -1,6 +1,0 @@
-# If you want to embed CMount Main as your tools environment
-# system you may want that CMount's name etc. will most replaced
-# by your branding.
-
-display_name: @PROJECT_NAME@
-display_version: @PROJECT_VERSION@

@@ -1,7 +1,7 @@
 
 help:
   - ""
-  - "Cmount (@CMAKE_BUILD_TYPE@) v@PROJECT_VERSION@: Tooling for cross platform C-dependent development."
+  - "@PROJECT_NAME@-v@PROJECT_VERSION@ (@CMAKE_BUILD_TYPE@): @PROJECT_DESCRIPTION@"
   - ""
   - "Common commands:"
   - "doctor       Status of installed tooling."

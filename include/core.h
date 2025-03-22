@@ -114,8 +114,7 @@ typedef struct logger_s logger_t;
  * from the logger or if the callback has experienced an error.
  */
 typedef bool (*logger_callback_t) (
-    logger_t* logger,
-    logger_significance_t significance,
+    logger_t* logger, logger_significance_t significance,
     const char* format, ...);
 
 
@@ -151,9 +150,7 @@ typedef struct logger_s {
  * @return A new logger with the processed values.
  */
 logger_t* logger_create(
-    const char* name,
-    bool verbose,
-    bool print_stdout,
+    const char* name, bool verbose, bool print_stdout,
     logger_callback_t log_func
 );
 
@@ -200,8 +197,7 @@ void logger_add_file(logger_t* logger, FILE* file);
  * @param max_log_files How many log files are allowed to exist before the function will clean them up. Default should be around 25.
  */
 void logger_clean_logs(
-    const char* log_dir_path,
-    int max_log_files
+    const char* log_dir_path, int max_log_files
 );
 
 
@@ -220,14 +216,13 @@ void logger_clean_logs(
  * @return Returns result for error handling.
  */
 bool logger_write(
-    logger_t* logger,
-    logger_significance_t sign,
+    logger_t* logger, logger_significance_t sign,
     const char* format, ...);
 
 
 bool logger_write_sequence(
-    logger_t* logger, const logger_significance_t significance,
-    char** messages, const size_t message_count
+    logger_t* logger, logger_significance_t significance,
+    char** messages, size_t message_count
 );
 
 
