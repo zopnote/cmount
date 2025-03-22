@@ -20,7 +20,7 @@ target_link_libraries(${PROJECT_NAME} parse core)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${OUT_BINARY_DIRECTORY})
 
-if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+if (CMAKE_SYSTEM_NAME STREQUAL Windows AND CMAKE_C_COMPILER STREQUAL Clang)
     install(
             FILES $<TARGET_PDB_FILE:${PROJECT_NAME}>
             DESTINATION bin

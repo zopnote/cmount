@@ -3,17 +3,14 @@
 /.idea/
 /build.py
 /compile_commands.json
-/cmake-build-debug/
-/cmake-build-release/
 /run_install_build.ps1
 /run_install_build.py
 
-/Dockerfile
-/cmake-build-win-debug/
-/cmake-build-win-release/
-/cmake-build-wsl-debug/
-/cmake-build-wsl-release/
-/cmake-build-arm-wsl-release/
 /out/
-/cmake-build-win_rel_deb/
-/cmake-build-wsl-rel-deb/
+/.cmake-build-wsl-release/
+/.cmake-build-wsl-rel_deb/
+/.cmake-build-wsl-debug/
+/.cmake-build-win-release/
+/.cmake-build-win-rel-deb/
+/.cmake-build-win-debug/
+/.cmake-build-wsl-rel-deb/

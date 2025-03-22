@@ -1,10 +1,27 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(cmount
-        DESCRIPTION "Unifying application for efficient and C-dependent program development."
-        VERSION 0.1
+
+# Because CMount should be used at itself as an environment, there is an actual need
+# to give the executables and folders, messages etc. an other project name.
+# The default is CMount's environment
+# -----------------------------------------------------------------------------
+if (NOT PROJECT_NAME)
+    set(PROJECT_NAME cmount)
+endif ()
+if (NOT PROJECT_DESCRIPTION)
+    set(PROJECT_DESCRIPTION "Unifying application for efficient and C-dependent program development.")
+endif ()
+if (NOT PROJECT_VERSION)
+    set(PROJECT_VERSION 0.1)
+endif ()
+project(
+        ${PROJECT_NAME}
+        DESCRIPTION ${PROJECT_DESCRIPTION}
+        VERSION ${PROJECT_VERSION}
         LANGUAGES C CXX
 )
+# -----------------------------------------------------------------------------
+
 
 
 # Language related
@@ -16,12 +33,13 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Wformat -Wformat-security -Wstack-protector -fstack-protector-strong -Wno-missing-braces")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wformat -Wformat-security -Wstack-protector -fstack-protector-strong -Wno-missing-braces")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Wformat -Wformat-security -Wstack-protector -fstack-protector-strong -Wno-missing-braces -Wno-unused-parameter")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wformat -Wformat-security -Wstack-protector -fstack-protector-strong -Wno-missing-braces -Wno-unused-parameter")
 else ()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stack-protector")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-stack-protector")
 endif ()
+
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Windows)
@@ -88,8 +106,6 @@ set(OUT_TEMPLATES_DIRECTORY ${OUT_RUNTIME_DIRECTORY}/templates)
 
 # Configurations of third party projects/deps
 # -----------------------------------------------------------------------------
-include(${CMAKE_SOURCE_DIR}/vendor/llvm.cmake)
-include(${CMAKE_SOURCE_DIR}/vendor/libcurl.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/yaml.cmake)
 include(${CMAKE_SOURCE_DIR}/vendor/dmon.cmake)
 # -----------------------------------------------------------------------------
@@ -99,7 +115,6 @@ include(${CMAKE_SOURCE_DIR}/vendor/dmon.cmake)
 # Actual source configuration of CMount
 # -----------------------------------------------------------------------------
 set(SRC_COMPONENT_DIRECTORY "${CMAKE_SOURCE_DIR}/src")
-include("${SRC_COMPONENT_DIRECTORY}/runner.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/core.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/parse.cmake")
 include("${SRC_COMPONENT_DIRECTORY}/main.cmake")
